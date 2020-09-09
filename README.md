@@ -14,3 +14,5 @@ All code are available for review in the `contracts` folder.
 [VybeStake](https://etherscan.io/address/0x69a04053dA11944001baE2e34C9951891D599209)
 
 [VybeLoan](https://etherscan.io/address/0x382EE41496E0Bb88F046F2C0D1Cf894F8D272BD5)
+
+The Loans test suite can be used as an example for how to execute a VybeLoan: [Example](https://github.com/vybetoken/vybe/blob/master/test/loan.sol) 
