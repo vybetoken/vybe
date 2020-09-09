@@ -66,23 +66,24 @@ contract("Vybe test", async (accounts) => {
 
       await stake.claimRewards();
       let mintagePiece = supplyAtStart
-        // 5% of the supply
-        .dividedBy(new BigNumber(20))
+        // get the % of the supply given the amount of passed months
+        .dividedBy(new BigNumber(25 + (i * 5)))
         // broken down further for the 5% for the devfund
         .dividedBy(new BigNumber(20));
 
       // ensure the staking rewards were paid
+      let expected = mintagePiece.multipliedBy(new BigNumber(19)).plus(balanceAtStart);
+      // allow a 1% variance due to division rounding
       assert(
-        mintagePiece
-          .multipliedBy(new BigNumber(19))
-          .plus(balanceAtStart)
-          .isEqualTo(await VYBE.balanceOf.call(accounts[0]))
+        expected.minus(expected.dividedBy(100)).isLessThan(await VYBE.balanceOf.call(accounts[0])) &&
+        expected.plus(expected.dividedBy(100)).isGreaterThan(await VYBE.balanceOf.call(accounts[0]))
       );
+
       // ensure the devfund was paid
+      expected = mintagePiece.plus(fundAtStart);
       assert(
-        mintagePiece
-          .plus(fundAtStart)
-          .isEqualTo(await VYBE.balanceOf.call(accounts[1]))
+        expected.minus(expected.dividedBy(100)).isLessThan(await VYBE.balanceOf.call(accounts[1])) &&
+        expected.plus(expected.dividedBy(100)).isGreaterThan(await VYBE.balanceOf.call(accounts[1]))
       );
     }
   });
