@@ -11,7 +11,7 @@ All code are available for review in the `contracts` folder.
 
 [Vybe](https://etherscan.io/address/0x3A1c1d1c06bE03cDDC4d3332F7C20e1B37c97CE9)
 
-[VybeStake](https://etherscan.io/address/0x6413fBB36C4990FDAEbf3c315b2f5140c828707F)
+[VybeStake](https://etherscan.io/address/0x2162481a5bc52d5243eca6402d9a8D580a4f24c7)
 
 [VybeLoan](https://etherscan.io/address/0x382EE41496E0Bb88F046F2C0D1Cf894F8D272BD5)
 
