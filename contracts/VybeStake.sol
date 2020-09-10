@@ -14,6 +14,8 @@ contract VybeStake is ReentrancyGuard, Ownable {
 
   Vybe private _VYBE;
 
+  bool private _dated;
+  bool private _migrated;
   uint256 _deployedAt;
 
   uint256 _totalStaked;
@@ -21,6 +23,8 @@ contract VybeStake is ReentrancyGuard, Ownable {
   mapping (address => uint256) private _lastClaim;
   address private _developerFund;
 
+  event StakeIncreased(address indexed staker, uint256 amount);
+  event StakeDecreased(address indexed staker, uint256 amount);
   event Rewards(address indexed staker, uint256 mintage, uint256 developerFund);
   event MelodyAdded(address indexed melody);
   event MelodyRemoved(address indexed melody);
@@ -43,26 +47,42 @@ contract VybeStake is ReentrancyGuard, Ownable {
     return _totalStaked;
   }
 
+  function migrate(address previous, address[] memory people, uint256[] memory lastClaims) external onlyOwner {
+    require(!_migrated);
+    require(people.length == lastClaims.length);
+    for (uint i = 0; i < people.length; i++) {
+      uint256 staked = VybeStake(previous).staked(people[i]);
+      _staked[people[i]] = staked;
+      _lastClaim[people[i]] = lastClaims[i];
+      emit StakeIncreased(people[i], staked);
+    }
+    require(_VYBE.transferFrom(previous, address(this), _VYBE.balanceOf(previous)));
+    _migrated = true;
+  }
+
   function staked(address staker) external view returns (uint256) {
     return _staked[staker];
   }
 
+  function lastClaim(address staker) external view returns (uint256) {
+    return _lastClaim[staker];
+  }
+
   function increaseStake(uint256 amount) external {
+    require(!_dated);
+
     require(_VYBE.transferFrom(msg.sender, address(this), amount));
     _totalStaked = _totalStaked.add(amount);
-    // if this is the first stake, set up their lastClaim
-    // stops getting rewards from the start of time
-    // if this isn't there first stake, allow them to increase it without penalty
-    if (_staked[msg.sender] == 0) {
-      _lastClaim[msg.sender] = block.timestamp;
-    }
+    _lastClaim[msg.sender] = block.timestamp;
     _staked[msg.sender] = _staked[msg.sender].add(amount);
+    emit StakeIncreased(msg.sender, amount);
   }
 
   function decreaseStake(uint256 amount) external {
     _staked[msg.sender] = _staked[msg.sender].sub(amount);
     _totalStaked = _totalStaked.sub(amount);
     require(_VYBE.transfer(address(msg.sender), amount));
+    emit StakeDecreased(msg.sender, amount);
   }
 
   function calculateSupplyDivisor() public view returns (uint256) {
@@ -115,6 +135,8 @@ contract VybeStake is ReentrancyGuard, Ownable {
   // noReentrancy shouldn't be needed due to the lack of external calls
   // better safe than sorry
   function claimRewards() external noReentrancy {
+    require(!_dated);
+
     uint256 mintage = _calculateMintage(msg.sender);
     uint256 mintagePiece = mintage.div(20);
     require(mintagePiece > 0);
@@ -139,6 +161,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
   }
 
   function upgrade(address owned, address upgraded) external onlyOwner {
+    _dated = true;
     IOwnershipTransferrable(owned).transferOwnership(upgraded);
   }
 }
