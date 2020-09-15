@@ -1,10 +1,10 @@
 ## Vybe Platform
 
-Vybe is an exciting new contribution to decentralized finance, with multiple solutions. We call these solutions melodies, as together, they form a harmonious step forward for the industry. The VYBE token is the focal point of the platform.
+Vybe is a new, modern take on decentralized finance. With multiple products that we refer to as melodies, as together they form a harmonious step forward for the industry. Our contracts were built from the ground up with upgradability in mind, which uniquely positions Vybe for flexibility in the future.
 
-VYBE must be purchased to utilize melodies, providing intrinsic value to VYBE. You can stake your VYBE to enable the ecosystem and increase your holdings. Every month, 5% of the VYBE supply is issued, and 4.75% is distributed to stakers. The remaining 0.25% funds future development to ensure the platform's long-term viability.
+VYBE must be purchased to utilize melodies, providing intrinsic value to VYBE. You can stake your VYBE to enable the ecosystem and increase your holdings.
 
-Staked VYBE is usable by any approved financial contract, including our first DApp, Vybe loans. Vybe loans are a cryptographically secure way to loan VYBE, where every loan is guaranteed to be paid back in full. There is no risk to any participants. When they're paid back, 1% interest is earned. This interest is burnt, directly contributing its value back to the ecosystem.
+In the first month of Vybe's existence, 5% of the VYBE supply is issued, and 4.75% is distributed to stakers. The remaining 0.25% funds future development to ensure the platform's long-term viability. The staking rate will decrease over the next six months from the current 5% to the final staking rate of 2% of the VYBE supply.
 
 ### Contracts
 All code are available for review in the `contracts` folder.
