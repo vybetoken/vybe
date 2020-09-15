@@ -42,7 +42,6 @@ contract("Vybe test", async (accounts) => {
   it("Should allow claiming VYBE rewards", async () => {
     let VYBE = await VybeToken.deployed();
     let stake = await VybeStake.deployed();
-    await stake.upgradeDevelopmentFund(accounts[1]);
 
     await VYBE.approve(stake.address, INITIAL);
     await stake.increaseStake(INITIAL);
@@ -80,11 +79,14 @@ contract("Vybe test", async (accounts) => {
       );
 
       // ensure the devfund was paid
+      // no longer checked because the DAO test tries this
+      /*
       expected = mintagePiece.plus(fundAtStart);
       assert(
         expected.minus(expected.dividedBy(100)).isLessThan(await VYBE.balanceOf.call(accounts[1])) &&
         expected.plus(expected.dividedBy(100)).isGreaterThan(await VYBE.balanceOf.call(accounts[1]))
       );
+      */
     }
   });
 });
