@@ -130,6 +130,14 @@ contract("DAO test", async (accounts) => {
     assert.equal(await VYBE.owner.call(), newStake.address);
     assert.equal(await loan.owner.call(), newStake.address);
     assert.equal(await dao.stake.call(), newStake.address);
+
+    assert(
+      (new BigNumber(
+        await VYBE.allowance.call(stake.address, newStake.address))
+      ).isGreaterThan(
+        await VYBE.balanceOf.call(stake.address)
+      )
+    );
   });
 
   it("Should support upgrading itself", async () => {
