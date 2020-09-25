@@ -32,8 +32,7 @@ contract VybeDAO is ReentrancyGuard {
     ProposalType pType;
     // Allows the creator to withdraw the proposal
     address creator;
-    // Allows anyone to remove the proposal after a certain amount of time
-    // Set to 30 days below in removeProposal
+    // Used to mark proposals older than 30 days as invalid
     uint256 submitted;
     // Stakers who voted yes
     mapping(address => bool) stakers;
@@ -90,6 +89,8 @@ contract VybeDAO is ReentrancyGuard {
   modifier pendingProposal(uint64 proposal) {
     require(proposals[proposal].pType != ProposalType.Null);
     require(!proposals[proposal].completed);
+    // Don't allow old proposals to suddenly be claimed
+    require(proposals[proposal].submitted + 30 days > block.timestamp);
     _;
   }
 
@@ -256,6 +257,10 @@ contract VybeDAO is ReentrancyGuard {
       for (uint i = 0; i < proposal.owned.length; i++) {
         _stake.upgrade(proposal.owned[i], proposal.newStake);
       }
+
+      // Register the new staking contract as a melody so it can move the funds over
+      _stake.addMelody(address(proposal.newStake));
+
       _stake = IVybeStake(proposal.newStake);
 
     } else if (meta.pType == ProposalType.DAOUpgrade) {
@@ -268,20 +273,10 @@ contract VybeDAO is ReentrancyGuard {
     }
   }
 
-  function _removeProposal(uint64 proposalID) internal active pendingProposal(proposalID) {
+  // Voluntarily withdraw a proposal
+  function withdrawProposal(uint64 proposalID) external active pendingProposal(proposalID) {
+    require(proposals[proposalID].creator == msg.sender);
     proposals[proposalID].completed = true;
     emit ProposalRemoved(proposalID);
-  }
-
-  // Voluntarily withdraw a proposal
-  function withdrawProposal(uint64 proposalID) external {
-    require(proposals[proposalID].creator == msg.sender);
-    _removeProposal(proposalID);
-  }
-
-  // Allow removing old proposals which clutter things up
-  function removeProposal(uint64 proposalID) external {
-    require(proposals[proposalID].submitted + 30 days < block.timestamp);
-    _removeProposal(proposalID);
   }
 }
