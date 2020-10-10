@@ -9,11 +9,13 @@ In the first month of Vybe's existence, 5% of the VYBE supply is issued, and 4.7
 ### Contracts
 All code are available for review in the `contracts` folder.
 
-[Vybe](https://etherscan.io/address/0x3A1c1d1c06bE03cDDC4d3332F7C20e1B37c97CE9)
+Token Contract: [Vybe](https://etherscan.io/address/0x3A1c1d1c06bE03cDDC4d3332F7C20e1B37c97CE9)
 
-[VybeStake](https://etherscan.io/address/0x1Bcc32Ac1C994CE7e9526FbaF95f37AbC0B2EC39)
+Governance Contract: [VybeDAO](https://etherscan.io/address/0x9E6a97d3a65BFd1dDC6D15025f985eBc9c8f2b0A)
 
-[VybeLoan](https://etherscan.io/address/0x382EE41496E0Bb88F046F2C0D1Cf894F8D272BD5)
+Staking Contract: [VybeStake](https://etherscan.io/address/0x1Bcc32Ac1C994CE7e9526FbaF95f37AbC0B2EC39)
+
+Flash Loan Contract: [VybeLoan](https://etherscan.io/address/0x382EE41496E0Bb88F046F2C0D1Cf894F8D272BD5)
 
 The Loans test suite can be used as an example for how to execute a VybeLoan: [Example](https://github.com/vybetoken/vybe/blob/master/test/loan.sol) 
 
