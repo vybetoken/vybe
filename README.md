@@ -13,6 +13,8 @@ Token Contract: [Vybe](https://etherscan.io/address/0x3A1c1d1c06bE03cDDC4d3332F7
 
 Governance Contract: [VybeDAO](https://etherscan.io/address/0x9E6a97d3a65BFd1dDC6D15025f985eBc9c8f2b0A)
 
+Time Locked Funds: [TokenTimeLock](https://etherscan.io/address/0x661cedb088918820e6893f01356f8d745010452a)
+
 Staking Contract: [VybeStake](https://etherscan.io/address/0x1Bcc32Ac1C994CE7e9526FbaF95f37AbC0B2EC39)
 
 Flash Loan Contract: [VybeLoan](https://etherscan.io/address/0x382EE41496E0Bb88F046F2C0D1Cf894F8D272BD5)
