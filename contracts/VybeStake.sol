@@ -21,6 +21,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
   uint256 _totalStaked;
   mapping (address => uint256) private _staked;
   mapping (address => uint256) private _lastClaim;
+  mapping (address => uint256) private _tier;
   address private _developerFund;
 
   event StakeIncreased(address indexed staker, uint256 amount);
@@ -46,6 +47,8 @@ contract VybeStake is ReentrancyGuard, Ownable {
   function totalStaked() external view returns (uint256) {
     return _totalStaked;
   }
+  // To do
+  // function viewAllStakers() external view returns (address[] memory) {}
 
   function migrate(address previous, address[] memory people, uint256[] memory lastClaims) external {
     require(!_migrated);
@@ -103,8 +106,9 @@ contract VybeStake is ReentrancyGuard, Ownable {
     return result;
   }
 
-  function _calculateMintage(address staker) private view returns (uint256) {
-    // total supply
+   // Old function for calculating profit
+   function _calculateMintage(address staker) private view returns (uint256) {
+    /* // total supply
     uint256 share = _VYBE.totalSupply()
       // divided by the supply divisor
       // initially 20 for 5%, increases to 50 over months for 2%
@@ -125,18 +129,34 @@ contract VybeStake is ReentrancyGuard, Ownable {
     if (timeElapsed != 0) {
       mintage = mintage.add(share.div(MONTH.div(timeElapsed)));
     }
-    return mintage;
-  }
+    return mintage; */
+  } 
+  // New function for calculating profit
+  function _calculateStakerReward(address staker) private view returns (uint256) {
+     uint256 amount = 0;
+     uint256 stakedTime = block.timestamp.sub(_lastClaim[staker]);
+     // Platinum Tier 
+     if (stakedTime > MONTH.mul(6)) {
+       amount = 10;
+     // Gold Tier
+     } else if (stakedTime > MONTH.mul(3)) {
+       amount = 8;
+    // Silver tier
+     } else if (stakedTime > MONTH.mul(3)) {
+       amount = 5;
+     }
 
+    return amount;
+
+  }
+  // TODO convert to new function
   function calculateRewards(address staker) public view returns (uint256) {
     // removes the five percent for the dev fund
     return _calculateMintage(staker).div(20).mul(19);
   }
-
-  // noReentrancy shouldn't be needed due to the lack of external calls
-  // better safe than sorry
-  function claimRewards() external noReentrancy {
-    require(!_dated);
+  // old claim rewards
+    function claimRewardsOld() external noReentrancy {
+  /*   require(!_dated);
 
     uint256 mintage = _calculateMintage(msg.sender);
     uint256 mintagePiece = mintage.div(20);
@@ -148,8 +168,24 @@ contract VybeStake is ReentrancyGuard, Ownable {
     _VYBE.mint(msg.sender, mintage.sub(mintagePiece));
     _VYBE.mint(_developerFund, mintagePiece);
 
-    emit Rewards(msg.sender, mintage, mintagePiece);
+    emit Rewards(msg.sender, mintage, mintagePiece);  */
   }
+
+// new claim rewards
+  function claimRewards() external noReentrancy {
+    require(!_dated);
+    uint256 supply = _VYBE.totalSupply();
+    uint256 StakerReward = _calculateStakerReward(msg.sender);
+    uint256 rewardPiece = StakerReward.div(20);
+    require(StakerReward > 0);
+
+    // update the last claim time
+    _lastClaim[msg.sender] = block.timestamp;
+    _VYBE.mint(msg.sender, StakerReward);
+
+    emit Rewards(msg.sender, StakerReward, rewardPiece);
+  }
+  
 
   function addMelody(address melody) external onlyOwner {
     _VYBE.approve(melody, UINT256_MAX);
