@@ -142,21 +142,22 @@ contract VybeStake is ReentrancyGuard, Ownable {
      } else if (stakedTime > MONTH.mul(3)) {
        amount = 8;
     // Silver tier
-     } else if (stakedTime > MONTH.mul(3)) {
+     } else if (stakedTime > MONTH.mul(1)) {
        amount = 5;
      }
+     uint256 StakerReward = _staked[msg.sender] * (amount.div(10));
 
-    return amount;
+    return StakerReward;
 
   }
   // TODO convert to new function
   function calculateRewards(address staker) public view returns (uint256) {
     // removes the five percent for the dev fund
-    return _calculateMintage(staker).div(20).mul(19);
+    return _calculateStakerReward(staker).div(20).mul(19);
   }
   // old claim rewards
     function claimRewardsOld() external noReentrancy {
-  /*   require(!_dated);
+     require(!_dated);
 
     uint256 mintage = _calculateMintage(msg.sender);
     uint256 mintagePiece = mintage.div(20);
@@ -168,24 +169,29 @@ contract VybeStake is ReentrancyGuard, Ownable {
     _VYBE.mint(msg.sender, mintage.sub(mintagePiece));
     _VYBE.mint(_developerFund, mintagePiece);
 
-    emit Rewards(msg.sender, mintage, mintagePiece);  */
+    emit Rewards(msg.sender, mintage, mintagePiece);  
   }
 
 // new claim rewards
   function claimRewards() external noReentrancy {
     require(!_dated);
-    uint256 supply = _VYBE.totalSupply();
-    uint256 StakerReward = _calculateStakerReward(msg.sender);
-    uint256 rewardPiece = StakerReward.div(20);
-    require(StakerReward > 0);
-
-    // update the last claim time
+    uint256 stakerReward = _calculateStakerReward(msg.sender);
+    uint256 rewardPiece = stakerReward.div(20);
+    require(stakerReward > 0);
     _lastClaim[msg.sender] = block.timestamp;
-    _VYBE.mint(msg.sender, StakerReward);
+    _VYBE.mint(msg.sender, stakerReward);
+    _VYBE.mint(_developerFund, rewardPiece);
 
-    emit Rewards(msg.sender, StakerReward, rewardPiece);
+    emit Rewards(msg.sender, stakerReward, rewardPiece);
   }
   
+  function claimNFT(address staker) external noReentrancy {
+    uint256 stakedTime = block.timestamp.sub(_lastClaim[staker]);
+     // confirm staker is in the Platinum tier
+     if (stakedTime > MONTH.mul(6)) {
+       // TODO mint NFT
+     }
+  }
 
   function addMelody(address melody) external onlyOwner {
     _VYBE.approve(melody, UINT256_MAX);
