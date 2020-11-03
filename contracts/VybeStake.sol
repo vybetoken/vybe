@@ -23,6 +23,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
   mapping (address => uint256) private _lastClaim;
   mapping (address => uint256) private _firstDeposit;
   mapping (address => uint256) private _lastSignificantDecrease;
+  mapping (address => uint256) private _lastDecrease;
   address private _developerFund;
 
   event StakeIncreased(address indexed staker, uint256 amount);
@@ -94,9 +95,13 @@ contract VybeStake is ReentrancyGuard, Ownable {
     _totalStaked = _totalStaked.sub(amount);
     require(_VYBE.transfer(address(msg.sender), amount));
     uint256 cutoffPercentage = 5;
-    if (amount >= _staked[msg.sender]* (cutoffPercentage.div(10))) {
+    // checks is the amount they are withdrawing in more than 5% and if it has been over a month since they withdrew less than 5%
+    if (amount >= _staked[msg.sender]* (cutoffPercentage.div(10)) && _lastDecrease[msg.sender] > MONTH) {
       _lastSignificantDecrease[msg.sender] = block.timestamp;
-      // Todo prevent lots of minor withdraws by limiting 1 small withdraw per month
+      _lastDecrease[msg.sender] = block.timestamp;
+      // If they withdraw more than 5% or withdraw less then 5% twice in 1 month then their tier is reset
+    } else {
+      _firstDeposit[msg.sender] = block.timestamp;
     }
     emit StakeDecreased(msg.sender, amount);
   }
