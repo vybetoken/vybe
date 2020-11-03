@@ -78,8 +78,10 @@ contract VybeStake is ReentrancyGuard, Ownable {
 
     require(_VYBE.transferFrom(msg.sender, address(this), amount));
     _totalStaked = _totalStaked.add(amount);
+
     _lastClaim[msg.sender] = block.timestamp;
-    if (!_firstDeposit[msg.sender]) {
+    // checks if this is the stakers first deposit
+    if (_firstDeposit[msg.sender] == 0) {
        _firstDeposit[msg.sender] = block.timestamp;
     }
    
@@ -144,15 +146,16 @@ contract VybeStake is ReentrancyGuard, Ownable {
   // New function for calculating profit
   function _calculateStakerReward(address staker) private view returns (uint256) {
      uint256 amount = 0;
-     uint256 stakedTime = block.timestamp.sub(_lastClaim[staker]);
+     uint256 stakedTime = block.timestamp.sub(_firstDeposit[staker]);
+     uint256 timeSinceLastDecrease = block.timestamp.sub(_lastSignificantDecrease[staker]);
      // Platinum Tier 
-     if (stakedTime > MONTH.mul(6)) {
+     if (stakedTime > MONTH.mul(6) && timeSinceLastDecrease > MONTH.mul(6)) {
        amount = 10;
      // Gold Tier
-     } else if (stakedTime > MONTH.mul(3)) {
+     } else if (stakedTime > MONTH.mul(3) && timeSinceLastDecrease > MONTH.mul(3)) {
        amount = 8;
     // Silver tier
-     } else if (stakedTime > MONTH.mul(1)) {
+     } else if (stakedTime > MONTH.mul(1) && timeSinceLastDecrease > MONTH.mul(1)) {
        amount = 5;
      }
      uint256 StakerReward = _staked[msg.sender] * (amount.div(10));
@@ -189,7 +192,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
     uint256 rewardPiece = stakerReward.div(100);
     require(stakerReward > 0);
     _lastClaim[msg.sender] = block.timestamp;
-    _VYBE.mint(msg.sender, stakerReward);
+    _staked[msg.sender] = _staked[msg.sender].add(stakerReward);
     _VYBE.mint(_developerFund, rewardPiece);
 
     emit Rewards(msg.sender, stakerReward, rewardPiece);
