@@ -21,6 +21,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
   uint256 _totalStaked;
   mapping (address => uint256) private _staked;
   mapping (address => uint256) private _lastClaim;
+  mapping (address => uint256) private _firstDeposit;
   mapping (address => uint256) private _lastSignificantDecrease;
   address private _developerFund;
 
@@ -78,6 +79,10 @@ contract VybeStake is ReentrancyGuard, Ownable {
     require(_VYBE.transferFrom(msg.sender, address(this), amount));
     _totalStaked = _totalStaked.add(amount);
     _lastClaim[msg.sender] = block.timestamp;
+    if (!_firstDeposit[msg.sender]) {
+       _firstDeposit[msg.sender] = block.timestamp;
+    }
+   
     _staked[msg.sender] = _staked[msg.sender].add(amount);
     emit StakeIncreased(msg.sender, amount);
   }
@@ -181,7 +186,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
   function claimRewards() external noReentrancy {
     require(!_dated);
     uint256 stakerReward = _calculateStakerReward(msg.sender);
-    uint256 rewardPiece = stakerReward.div(20);
+    uint256 rewardPiece = stakerReward.div(100);
     require(stakerReward > 0);
     _lastClaim[msg.sender] = block.timestamp;
     _VYBE.mint(msg.sender, stakerReward);
