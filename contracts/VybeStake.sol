@@ -24,6 +24,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
   mapping (address => uint256) private _firstDeposit;
   mapping (address => uint256) private _lastSignificantDecrease;
   mapping (address => uint256) private _lastDecrease;
+  mapping (address => uint256) private _lastNFTClaim;
   address private _developerFund;
 
   event StakeIncreased(address indexed staker, uint256 amount);
@@ -204,10 +205,19 @@ contract VybeStake is ReentrancyGuard, Ownable {
   }
   
   function claimNFT(address staker) external noReentrancy {
-    uint256 stakedTime = block.timestamp.sub(_lastClaim[staker]);
+    bool claimable = NFTclaimable();
+    if (claimable) {
+      // mint NFT
+    }
+  }
+  function NFTclaimable() private view returns (bool) {
+       uint256 stakedTime = block.timestamp.sub(_lastClaim[msg.sender]);
      // confirm staker is in the Platinum tier
-     if (stakedTime > MONTH.mul(6)) {
-       // TODO mint NFT
+     if (stakedTime > MONTH.mul(6) && _lastNFTClaim[msg.sender] > MONTH.mul(1)) {
+
+      return true;
+     } else {
+       return false;
      }
   }
 
