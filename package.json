@@ -5,7 +5,9 @@
   "author": "Vybe Platform",
   "license": "MIT",
   "dependencies": {
+    "@openzeppelin/contracts": "^3.2.0",
     "@truffle/hdwallet-provider": "^1.0.43",
+    "truffle-flattener": "^1.5.0",
     "web3": "^1.2.11"
   }
 }
