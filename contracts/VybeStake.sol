@@ -124,31 +124,6 @@ contract VybeStake is ReentrancyGuard, Ownable {
     return result;
   }
 
-   // Old function for calculating profit
-   function _calculateMintage(address staker) private view returns (uint256) {
-    /* // total supply
-    uint256 share = _VYBE.totalSupply()
-      // divided by the supply divisor
-      // initially 20 for 5%, increases to 50 over months for 2%
-      .div(calculateSupplyDivisor())
-      // divided again by their stake representation
-      .div(_totalStaked.div(_staked[staker]));
-
-    // this share is supposed to be issued monthly, so see how many months its been
-    uint256 timeElapsed = block.timestamp.sub(_lastClaim[staker]);
-    uint256 mintage = 0;
-    // handle whole months
-    if (timeElapsed > MONTH) {
-      mintage = share.mul(timeElapsed.div(MONTH));
-      timeElapsed = timeElapsed.mod(MONTH);
-    }
-    // handle partial months, if there are any
-    // this if check prevents a revert due to div by 0
-    if (timeElapsed != 0) {
-      mintage = mintage.add(share.div(MONTH.div(timeElapsed)));
-    }
-    return mintage; */
-  } 
   // New function for calculating profit
   function _calculateStakerReward(address staker) private view returns (uint256) {
      uint256 amount = 0;
@@ -173,22 +148,6 @@ contract VybeStake is ReentrancyGuard, Ownable {
   function calculateRewards(address staker) public view returns (uint256) {
     // removes the five percent for the dev fund
     return _calculateStakerReward(staker).div(20).mul(19);
-  }
-  // old claim rewards
-    function claimRewardsOld() external noReentrancy {
-     require(!_dated);
-
-    uint256 mintage = _calculateMintage(msg.sender);
-    uint256 mintagePiece = mintage.div(20);
-    require(mintagePiece > 0);
-
-    // update the last claim time
-    _lastClaim[msg.sender] = block.timestamp;
-    // mint out their staking rewards and the dev funds
-    _VYBE.mint(msg.sender, mintage.sub(mintagePiece));
-    _VYBE.mint(_developerFund, mintagePiece);
-
-    emit Rewards(msg.sender, mintage, mintagePiece);  
   }
 
 // new claim rewards
