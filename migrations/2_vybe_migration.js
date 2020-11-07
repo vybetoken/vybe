@@ -15,5 +15,5 @@ module.exports = async (deployer) => {
   let dao = await deployer.deploy(VybeDAO, stake.address);
   await stake.upgradeDevelopmentFund(dao.address);
   await stake.transferOwnership(dao.address);
-  let VybeNFT = await deployer.deploy(VybeNFT, stake.address);
+  let VybeNFT = await deployer.deploy(VybeNFT).chain;
 };

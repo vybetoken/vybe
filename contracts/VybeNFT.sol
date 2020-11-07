@@ -1,11 +1,9 @@
-pragma solidity ^0.7.0;
+pragma solidity ^0.6.0;
 
-import "./ERC721.sol";
+import "node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract TierReward is ERC721 {
-    constructor(address vybe) ERC721("VybeReward", "REWARD") {
-        
-    }
+    constructor(address vybe) public ERC721("VybeReward", "REWARD") {}
 
     function mint(string memory _type) public {}
 }
