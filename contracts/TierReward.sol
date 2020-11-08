@@ -1,6 +1,6 @@
 pragma solidity ^0.6.0;
 
-import "node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract TierReward is ERC721 {
     constructor(address vybe) public ERC721("VybeReward", "REWARD") {}

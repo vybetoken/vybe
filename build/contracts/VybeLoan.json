@@ -66,7 +66,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -3527,9 +3528,56 @@
     "name": "solc",
     "version": "0.6.12+commit.27d51765.Emscripten.clang"
   },
-  "networks": {},
+  "networks": {
+    "5777": {
+      "events": {
+        "0x57529235d42dc1daa6e5fa9e9182c6e3a6eed1db72665e80db2167b8e10504ea": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "profit",
+              "type": "uint256"
+            }
+          ],
+          "name": "Loaned",
+          "type": "event"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0xC17E7Be1CecaC60F2F15bE814505083Ce3B8e777",
+      "transactionHash": "0xbdaf407cbb39972cf9009e204efccbdba1a0ffd5784777e075a85af807fb15a9"
+    }
+  },
   "schemaVersion": "3.2.4",
-  "updatedAt": "2020-11-07T16:41:27.898Z",
+  "updatedAt": "2020-11-08T17:05:40.853Z",
+  "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
     "methods": {},

@@ -212,7 +212,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -241,7 +242,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -265,7 +267,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -289,7 +292,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -313,7 +317,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -347,7 +352,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -371,7 +377,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [],
@@ -384,7 +391,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [],
@@ -397,7 +405,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [],
@@ -410,7 +419,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -26969,9 +26979,196 @@
     "name": "solc",
     "version": "0.6.12+commit.27d51765.Emscripten.clang"
   },
-  "networks": {},
+  "networks": {
+    "5777": {
+      "events": {
+        "0x29ff7ec46662ba30200783e0d6cbe17047c2ab7058785f9d441e8b21a88e2574": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint64",
+              "name": "proposal",
+              "type": "uint64"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "newDAO",
+              "type": "address"
+            }
+          ],
+          "name": "DAOUpgradeProposed",
+          "type": "event"
+        },
+        "0xc6befa0284988cf06a62f33e703b26fa8fe104aff100ff179eb9b02174018530": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint64",
+              "name": "proposal",
+              "type": "uint64"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "destination",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "FundProposed",
+          "type": "event"
+        },
+        "0x29cd6c86b51064508c60d447e776b80d8c6f25603856be845b6a2abe192a0077": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint64",
+              "name": "proposal",
+              "type": "uint64"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "melody",
+              "type": "address"
+            }
+          ],
+          "name": "MelodyAdditionProposed",
+          "type": "event"
+        },
+        "0x339826f1c3d7b31c2395903a0738e18e4c9463f3d6749d47e35a9feb2344e8db": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint64",
+              "name": "proposal",
+              "type": "uint64"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "melody",
+              "type": "address"
+            }
+          ],
+          "name": "MelodyRemovalProposed",
+          "type": "event"
+        },
+        "0xe1c41d4ba86fb17ee8e9f88a333876ca22e0d2940c46a544405bb18a6b932a5c": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint64",
+              "name": "proposal",
+              "type": "uint64"
+            }
+          ],
+          "name": "NewProposal",
+          "type": "event"
+        },
+        "0x6085cc60943f0b976690a6f940d11a998d1a616c9469dc9196e763e342ca583f": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint64",
+              "name": "proposal",
+              "type": "uint64"
+            }
+          ],
+          "name": "ProposalPassed",
+          "type": "event"
+        },
+        "0x9253f303ac7bc301d8f26a3c594cf868be86bee4afd53c746f29cc0103a4274f": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint64",
+              "name": "proposal",
+              "type": "uint64"
+            }
+          ],
+          "name": "ProposalRemoved",
+          "type": "event"
+        },
+        "0xc7442600edbdac0b51781946ea453c6ec64fba32dc76e7e711cbe79a15ec5fec": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint64",
+              "name": "proposal",
+              "type": "uint64"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "staker",
+              "type": "address"
+            }
+          ],
+          "name": "ProposalVoteAdded",
+          "type": "event"
+        },
+        "0x55b02b9855e513ee8f9281215332c8cf0f8304cadcdca4e1b3910609797103e6": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint64",
+              "name": "proposal",
+              "type": "uint64"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "staker",
+              "type": "address"
+            }
+          ],
+          "name": "ProposalVoteRemoved",
+          "type": "event"
+        },
+        "0xfd08ecdf1b11b329fffd11e68af1d1f874ca2e56aa45a1e13065e6cc26373b2c": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint64",
+              "name": "proposal",
+              "type": "uint64"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "newStake",
+              "type": "address"
+            }
+          ],
+          "name": "StakeUpgradeProposed",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0x89Af925257EF9b4acb9a67c5abe1D16D710C3a2b",
+      "transactionHash": "0x3fe1cda303e6883d42aeae0037cca71156e2fc51df7030abb324ce904774e735"
+    }
+  },
   "schemaVersion": "3.2.4",
-  "updatedAt": "2020-11-07T16:41:27.878Z",
+  "updatedAt": "2020-11-08T17:05:40.860Z",
+  "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
     "methods": {},
