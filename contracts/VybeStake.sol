@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-import "./SafeMath.sol";
+import "node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 import "./IOwnershipTransferrable.sol";
 import "./ReentrancyGuard.sol";
 import "./Vybe.sol";
-import "./TierReward.sol"
+import "./TierReward.sol";
 
 contract VybeStake is ReentrancyGuard, Ownable {
     using SafeMath for uint256;
@@ -198,7 +198,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
     function claimNFT(address staker) external noReentrancy {
        uint256 whichTier = NFTclaimable(staker);
        if (whichTier > 0) {
-            _TierRewards.mint(msg.sender, whichTier)
+            _TierReward.mint(msg.sender, whichTier);
        }
     }
 

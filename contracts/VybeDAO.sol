@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-import "./SafeMath.sol";
+import "node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 import "./ReentrancyGuard.sol";
 import "./IOwnershipTransferrable.sol";
 import "./IVybeStake.sol";
