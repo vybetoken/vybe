@@ -6,10 +6,11 @@ contract TierReward is ERC721 {
     constructor() public ERC721("Vybe Tier Reward", "REWARD") {}
 
     mapping(address => string) private _type;
-    uint256 counter;
+
+    uint256 counter = 0;
 
     function mint(address staker, uint256 tier) private {
-        counter + 1;
+        counter = counter + 1;
         uint256 _id = counter;
 
         if (tier == 1){
@@ -22,7 +23,7 @@ contract TierReward is ERC721 {
             _type[_id] = "platinum";
 
         }
-        _mint(staker, counter);
+        _mint(staker, _id);
     }
 
     function burn(uint _id) private {
