@@ -202,7 +202,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
        }
     }
 
-    function NFTclaimable() private view returns (bool) {
+    function NFTclaimable() public view returns (uint256) {
         uint256 stakedTime = block.timestamp.sub(_lastClaim[msg.sender]);
         uint256 result = 0;
        if (
