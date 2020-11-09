@@ -2,8 +2,6 @@ const BigNumber = require("bignumber.js");
 
 let VybeToken = artifacts.require("Vybe");
 let VybeStake = artifacts.require("VybeStake");
-let VybeLoan = artifacts.require("VybeLoan");
-let VybeDAO = artifacts.require("VybeDAO");
 
 const ONE = new BigNumber(1);
 const DAY = 60 * 60 * 24;

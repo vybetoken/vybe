@@ -5,6 +5,7 @@ import "./SafeMath.sol";
 import "./IOwnershipTransferrable.sol";
 import "./ReentrancyGuard.sol";
 import "./Vybe.sol";
+import "./TierReward.sol"
 
 contract VybeStake is ReentrancyGuard, Ownable {
     using SafeMath for uint256;
@@ -13,6 +14,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
     uint256 constant MONTH = 30 days;
 
     Vybe private _VYBE;
+    TierReward private _TierReward;
 
     bool private _dated;
     bool private _migrated;
@@ -194,23 +196,40 @@ contract VybeStake is ReentrancyGuard, Ownable {
     }
 
     function claimNFT(address staker) external noReentrancy {
-        bool claimable = NFTclaimable();
-        if (claimable) {
-            // mint NFT
-        }
+       uint256 whichTier = NFTclaimable(staker);
+       if (whichTier > 0) {
+            _TierRewards.mint(msg.sender, whichTier)
+       }
     }
 
     function NFTclaimable() private view returns (bool) {
         uint256 stakedTime = block.timestamp.sub(_lastClaim[msg.sender]);
-        // confirm staker is in the Platinum tier
-        if (
+        uint256 result = 0;
+       if (
             stakedTime > MONTH.mul(6) &&
             _lastNFTClaim[msg.sender] > MONTH.mul(1)
         ) {
-            return true;
-        } else {
-            return false;
-        }
+
+          result = 3;
+
+          }
+          // check if staker is in the gold tier 
+          else if 
+          (stakedTime > MONTH.mul(3) &&
+            _lastNFTClaim[msg.sender] > MONTH.mul(1))
+             {
+              result = 2;
+            } 
+            // check if stake is in the silver tier
+            else if 
+            (stakedTime > MONTH.mul(1) &&
+            _lastNFTClaim[msg.sender] > MONTH.mul(1)) 
+            {
+              result = 1;
+            }
+        
+         return result;
+    
     }
 
     function addMelody(address melody) external onlyOwner {

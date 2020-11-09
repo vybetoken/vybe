@@ -27,7 +27,7 @@ contract TierReward is ERC721 {
     }
 
     function burn(uint _id) private {
-        _burn(uint _id)
+        _burn(uint _id);
     }
 
     function getRewardType(uint256 _id) public view returns (string) {
