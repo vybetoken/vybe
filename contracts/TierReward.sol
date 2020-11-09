@@ -5,11 +5,11 @@ import "node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
 contract TierReward is ERC721 {
     constructor() public ERC721("Vybe Tier Reward", "REWARD") {}
 
-    mapping(address => uint256) private _type;
+    mapping(uint256 => uint256) private _type;
 
     uint256 counter = 0;
 
-    function mint(address staker, uint256 tier) private {
+    function mint(address staker, uint256 tier) public {
         counter = counter + 1;
         uint256 _id = counter;
 
