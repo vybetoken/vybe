@@ -2,6 +2,7 @@ let VybeToken = artifacts.require("Vybe");
 let VybeStake = artifacts.require("VybeStake");
 let VybeLoan = artifacts.require("VybeLoan");
 let VybeDAO = artifacts.require("VybeDAO");
+let TierReward = artifacts.require("TierReward");
 
 module.exports = async (deployer) => {
   let VYBE = await deployer.deploy(VybeToken).chain;
@@ -14,4 +15,5 @@ module.exports = async (deployer) => {
   let dao = await deployer.deploy(VybeDAO, stake.address);
   await stake.upgradeDevelopmentFund(dao.address);
   await stake.transferOwnership(dao.address);
+  let TierReward = await deployer.deploy(TierReward).chain;
 };

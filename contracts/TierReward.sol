@@ -3,8 +3,35 @@ pragma solidity ^0.6.0;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract TierReward is ERC721 {
-    constructor(address vybe) public ERC721("VybeReward", "REWARD") {}
+    constructor() public ERC721("Vybe Tier Reward", "REWARD") {}
 
-    function mint(string memory _type) public {}
+    mapping(address => string) private _type;
+    uint256 counter;
+
+    function mint(address staker, uint256 tier) private {
+        counter + 1;
+        uint256 _id = counter;
+
+        if (tier == 1){
+            _type[_id] = "silver";
+
+        } else if (tier == 2) {
+            _type[_id] = "gold";
+
+        } else if (tier == 3) {
+            _type[_id] = "platinum";
+
+        }
+        _mint(staker, counter);
+    }
+
+    function burn(uint _id) private {
+        _burn(uint _id)
+    }
+
+    function getRewardType(uint256 _id) public view returns (string) {
+        string type = _type[id];
+        return type;
+    }
 }
 // SPDX-License-Identifier: MIT
