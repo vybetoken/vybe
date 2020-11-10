@@ -152,10 +152,10 @@ contract VybeStake is ReentrancyGuard, Ownable {
         view
         returns (uint256)
     {
-        uint256 amount = 0;
+        uint256 amount;
         uint256 stakedTime = block.timestamp.sub(_firstDeposit[staker]);
         uint256 timeSinceLastDecrease = stakedTime;
-        if (_lastSignificantDecrease[staker] > 0) {
+        if (_lastSignificantDecrease[staker] != 0) {
         timeSinceLastDecrease = block.timestamp.sub(
             _lastSignificantDecrease[staker]
         ); } 
@@ -173,7 +173,6 @@ contract VybeStake is ReentrancyGuard, Ownable {
         ) {
             amount = 5;
         }
-        amount = amount.div(10);
         uint256 StakerReward = amount;
 
         return StakerReward;
@@ -182,16 +181,16 @@ contract VybeStake is ReentrancyGuard, Ownable {
     // TODO convert to new function
     function calculateRewards(address staker) public view returns (uint256) {
         // removes the five percent for the dev fund
-        return _calculateStakerReward(staker).div(20).mul(19);
+        return _calculateStakerReward(staker);
     }
 
     // new claim rewards
     function claimRewards() external noReentrancy {
         require(!_dated);
 
-        uint256 stakerRewardTierRate = _calculateStakerReward(msg.sender).div(12);
+        uint256 stakerRewardTierRate = _calculateStakerReward(msg.sender);
         uint256 monthsToPay = _lastClaim[msg.sender].div(MONTH);
-        require(monthsToPay > MONTH);
+        // require(monthsToPay > MONTH);
         uint256 stakerRewardPercentage = stakerRewardTierRate.mul(monthsToPay);
         uint256 stakerReward = _staked[msg.sender] * stakerRewardPercentage;
         uint256 devPiece = stakerReward.div(100);

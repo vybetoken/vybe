@@ -86,16 +86,6 @@ contract("Vybe test", async (accounts) => {
             .plus(expected.dividedBy(100))
             .isGreaterThan(await VYBE.balanceOf.call(accounts[0]))
       );
-
-      // ensure the devfund was paid
-      // no longer checked because the DAO test tries this
-      /*
-      expected = mintagePiece.plus(fundAtStart);
-      assert(
-        expected.minus(expected.dividedBy(100)).isLessThan(await VYBE.balanceOf.call(accounts[1])) &&
-        expected.plus(expected.dividedBy(100)).isGreaterThan(await VYBE.balanceOf.call(accounts[1]))
-      );
-      */
     }
   });
 });
