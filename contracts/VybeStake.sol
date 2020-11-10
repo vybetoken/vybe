@@ -154,9 +154,11 @@ contract VybeStake is ReentrancyGuard, Ownable {
     {
         uint256 amount = 0;
         uint256 stakedTime = block.timestamp.sub(_firstDeposit[staker]);
-        uint256 timeSinceLastDecrease = block.timestamp.sub(
+        uint256 timeSinceLastDecrease = stakedTime;
+        if (_lastSignificantDecrease[staker] > 0) {
+        timeSinceLastDecrease = block.timestamp.sub(
             _lastSignificantDecrease[staker]
-        );
+        ); } 
         // Platinum Tier
         if (stakedTime > MONTH.mul(6) && timeSinceLastDecrease > MONTH.mul(6)) {
             amount = 10;
@@ -171,7 +173,8 @@ contract VybeStake is ReentrancyGuard, Ownable {
         ) {
             amount = 5;
         }
-        uint256 StakerReward = _staked[msg.sender] * (amount.div(10));
+        amount = amount.div(10);
+        uint256 StakerReward = amount;
 
         return StakerReward;
     }
@@ -185,15 +188,26 @@ contract VybeStake is ReentrancyGuard, Ownable {
     // new claim rewards
     function claimRewards() external noReentrancy {
         require(!_dated);
-        uint256 stakerReward = _calculateStakerReward(msg.sender);
-        uint256 rewardPiece = stakerReward.div(100);
+
+        uint256 stakerRewardTierRate = _calculateStakerReward(msg.sender).div(12);
+        uint256 monthsToPay = _lastClaim[msg.sender].div(MONTH);
+        require(monthsToPay > MONTH);
+        uint256 stakerRewardPercentage = stakerRewardTierRate.mul(monthsToPay);
+        uint256 stakerReward = _staked[msg.sender] * stakerRewardPercentage;
+        uint256 devPiece = stakerReward.div(100);
+
+        stakerReward = stakerReward - devPiece;
+        
         require(stakerReward > 0);
         _lastClaim[msg.sender] = block.timestamp;
-        _staked[msg.sender] = _staked[msg.sender].add(stakerReward);
-        _VYBE.mint(_developerFund, rewardPiece);
 
-        emit Rewards(msg.sender, stakerReward, rewardPiece);
+        _staked[msg.sender] = _staked[msg.sender].add(stakerReward);
+        _VYBE.mint(msg.sender, stakerReward);
+        _VYBE.mint(_developerFund, devPiece);
+
+        emit Rewards(msg.sender, stakerReward, devPiece);
     }
+    
 
     function claimNFT(address staker) external noReentrancy {
        uint256 whichTier = NFTclaimable(staker);
