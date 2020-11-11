@@ -152,28 +152,35 @@ contract VybeStake is ReentrancyGuard, Ownable {
         view
         returns (uint256)
     {
-        uint256 amount;
-        uint256 stakedTime = block.timestamp.sub(_firstDeposit[staker]);
-        uint256 timeSinceLastDecrease = stakedTime;
-        if (_lastSignificantDecrease[staker] != 0) {
-        timeSinceLastDecrease = block.timestamp.sub(
-            _lastSignificantDecrease[staker]
-        ); } 
-        // Platinum Tier
-        if (stakedTime > MONTH.mul(6) && timeSinceLastDecrease > MONTH.mul(6)) {
-            amount = 10;
-            // Gold Tier
-        } else if (
-            stakedTime > MONTH.mul(3) && timeSinceLastDecrease > MONTH.mul(3)
-        ) {
-            amount = 8;
-            // Silver tier
-        } else if (
-            stakedTime > MONTH.mul(1) && timeSinceLastDecrease > MONTH.mul(1)
-        ) {
-            amount = 5;
+        uint256 interestPerMonth;
+        uint256 stakedTime;
+        if (_firstDeposit[staker] >= _lastSignificantDecrease[staker]) {
+            stakedTime = block.timestamp.sub(_firstDeposit[staker]);
+        } else {
+          stakedTime = block.timestamp.sub(_lastSignificantDecrease[staker]);
         }
-        uint256 StakerReward = amount;
+        
+        // Platinum Tier
+        if (stakedTime > MONTH.mul(6)) {
+            // in basis points (10% APY)
+            interestPerMonth = 84;
+            // Gold Tier
+        } else if (stakedTime > MONTH.mul(3)) {
+             // in basis points (8% APY)
+            interestPerMonth = 67;
+            // Silver tier
+        } else if (stakedTime > MONTH.mul(1)) {
+            // in basis points (5% APY)
+            interestPerMonth = 42;
+        }
+        if (block.timestamp.sub(_lastClaim[staker]) < stakedTime) {
+            stakedTime = block.timestamp.sub(_lastClaim[staker]);
+        }
+        require(interestPerMonth > 0, 'not earned enough interest yet');
+        stakedTime = stakedTime.div(MONTH);
+        uint256 interest = interestPerMonth.mul(stakedTime);
+
+        uint256 StakerReward = (_staked[staker] / 10000) * interest; ;
 
         return StakerReward;
     }
@@ -187,12 +194,10 @@ contract VybeStake is ReentrancyGuard, Ownable {
     // new claim rewards
     function claimRewards() external noReentrancy {
         require(!_dated);
+        require(_staked[msg.sender] > 0);
 
-        uint256 stakerRewardTierRate = _calculateStakerReward(msg.sender);
-        uint256 monthsToPay = _lastClaim[msg.sender].div(MONTH);
-        // require(monthsToPay > MONTH);
-        uint256 stakerRewardPercentage = stakerRewardTierRate.mul(monthsToPay);
-        uint256 stakerReward = _staked[msg.sender] * stakerRewardPercentage;
+        uint256 stakerReward = _calculateStakerReward(msg.sender);
+
         uint256 devPiece = stakerReward.div(100);
 
         stakerReward = stakerReward - devPiece;
