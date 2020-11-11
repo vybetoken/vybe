@@ -153,12 +153,8 @@ contract VybeStake is ReentrancyGuard, Ownable {
         returns (uint256)
     {
         uint256 interestPerMonth;
-        uint256 stakedTime;
-        if (_lastClaim[staker] >= _lastSignificantDecrease[staker]) {
-            stakedTime = block.timestamp.sub(_lastClaim[staker]);
-        } else {
-          stakedTime = block.timestamp.sub(_lastSignificantDecrease[staker]);
-        }
+        uint256 stakedTime = block.timestamp.div(2);
+        
         
         // Platinum Tier
         if (stakedTime > MONTH.mul(6)) {
