@@ -194,7 +194,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
     // new claim rewards
     function claimRewards() external noReentrancy {
         require(!_dated);
-        require(_staked[msg.sender] > 0);
+        require(_staked[msg.sender] > 0, 'user has 0 staked');
 
         uint256 stakerReward = _calculateStakerReward(msg.sender);
 
