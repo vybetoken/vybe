@@ -48,7 +48,8 @@ contract("Vybe test", async (accounts) => {
 
     // test basic staking with a one month time period
     // run twice to ensure that the last claim time was updated
-    for (var i = 0; i < 2; i++) {
+    for (var i = 60; i < 365; i + 30) {
+      console.log("Test for " + i / 30 + " number of months");
       // use BN 1 as the returned variable doesn't have prototypes
       let supplyAtStart = ONE.multipliedBy(await VYBE.totalSupply());
       let balanceAtStart = await VYBE.balanceOf.call(accounts[0]);
@@ -59,7 +60,7 @@ contract("Vybe test", async (accounts) => {
           {
             jsonrpc: "2.0",
             method: "evm_increaseTime",
-            params: [DAY * 30],
+            params: [DAY * i],
             id: null,
           },
           resolve
@@ -74,9 +75,21 @@ contract("Vybe test", async (accounts) => {
         .dividedBy(new BigNumber(20));
 
       // ensure the staking rewards were paid
-      let expected = mintagePiece
-        .multipliedBy(new BigNumber(19))
-        .plus(balanceAtStart);
+      let expected = calculateExpected();
+      function calculateExpected() {
+        let monthsStakingFor = i / 30;
+        let rewardPerMonth = 0;
+        let reward = 0;
+        if (monthsStakingFor > 6) {
+          rewardPerMonth = INITIAL.multipliedBy(0.0083);
+        } else if (monthsStakingFor > 3) {
+          rewardPerMonth = INITIAL.multipliedBy(0.0067);
+        } else if (monthsStakingFor > 1) {
+          rewardPerMonth = INITIAL.multipliedBy(0.0042);
+        }
+        reward = rewardPerMonth.multipliedBy(monthsStakingFor);
+        return reward;
+      }
       // allow a 1% variance due to division rounding
       assert(
         expected
@@ -84,7 +97,8 @@ contract("Vybe test", async (accounts) => {
           .isLessThan(await VYBE.balanceOf.call(accounts[0])) &&
           expected
             .plus(expected.dividedBy(100))
-            .isGreaterThan(await VYBE.balanceOf.call(accounts[0]))
+            .isGreaterThan(await VYBE.balanceOf.call(accounts[0])),
+        "amount wasn't correct"
       );
     }
   });
