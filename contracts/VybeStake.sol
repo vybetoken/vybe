@@ -154,8 +154,8 @@ contract VybeStake is ReentrancyGuard, Ownable {
     {
         uint256 interestPerMonth;
         uint256 stakedTime;
-        if (_firstDeposit[staker] >= _lastSignificantDecrease[staker]) {
-            stakedTime = block.timestamp.sub(_firstDeposit[staker]);
+        if (_lastClaim[staker] >= _lastSignificantDecrease[staker]) {
+            stakedTime = block.timestamp.sub(_lastClaim[staker]);
         } else {
           stakedTime = block.timestamp.sub(_lastSignificantDecrease[staker]);
         }
@@ -173,14 +173,11 @@ contract VybeStake is ReentrancyGuard, Ownable {
             // in basis points (5% APY)
             interestPerMonth = 42;
         }
-        if (block.timestamp.sub(_lastClaim[staker]) < stakedTime) {
-            stakedTime = block.timestamp.sub(_lastClaim[staker]);
-        }
         require(interestPerMonth > 0, 'not earned enough interest yet');
         stakedTime = stakedTime.div(MONTH);
         uint256 interest = interestPerMonth.mul(stakedTime);
 
-        uint256 StakerReward = (_staked[staker] / 10000) * interest; ;
+        uint256 StakerReward = (_staked[staker] / 10000) * interest;
 
         return StakerReward;
     }
@@ -206,7 +203,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
         _lastClaim[msg.sender] = block.timestamp;
 
         _staked[msg.sender] = _staked[msg.sender].add(stakerReward);
-        _VYBE.mint(msg.sender, stakerReward);
+        _VYBE.mint(address(this), stakerReward);
         _VYBE.mint(_developerFund, devPiece);
 
         emit Rewards(msg.sender, stakerReward, devPiece);
