@@ -148,13 +148,16 @@ contract VybeStake is ReentrancyGuard, Ownable {
 
     // New function for calculating profit
     function _calculateStakerReward(address staker)
-        private
+        public
         view
         returns (uint256)
     {
         uint256 interestPerMonth;
-        uint256 stakedTime = block.timestamp.div(2);
-        
+        uint256 claimFrom = _lastClaim[msg.sender];
+        if (_lastSignificantDecrease[msg.sender] > _lastClaim[msg.sender]) {
+          claimFrom = _lastSignificantDecrease[msg.sender];
+        }
+        uint256 stakedTime = block.timestamp.sub(claimFrom);
         
         // Platinum Tier
         if (stakedTime > MONTH.mul(6)) {
@@ -165,12 +168,11 @@ contract VybeStake is ReentrancyGuard, Ownable {
              // in basis points (8% APY)
             interestPerMonth = 67;
             // Silver tier
-        } else if (stakedTime > MONTH.mul(1)) {
+        } else if (stakedTime > MONTH) {
             // in basis points (5% APY)
             interestPerMonth = 42;
         }
-        require(interestPerMonth > 0, 'not earned enough interest yet');
-        stakedTime = stakedTime.div(MONTH);
+        stakedTime = stakedTime.div(30 days);
         uint256 interest = interestPerMonth.mul(stakedTime);
 
         uint256 StakerReward = (_staked[staker] / 10000) * interest;
