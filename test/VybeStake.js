@@ -39,18 +39,15 @@ contract("Vybe test", async (accounts) => {
     assert(new BigNumber(0).isEqualTo(await stake.staked(accounts[0])));
     assert(INITIAL.isEqualTo(await VYBE.balanceOf.call(accounts[0])));
   });
-  it("Should allow claiming VYBE rewards", async () => {
+  it("Test Staking results for 2 years and claiming rewards every month", async () => {
     let VYBE = await VybeToken.deployed();
     let stake = await VybeStake.deployed();
 
     await VYBE.approve(stake.address, INITIAL);
     await stake.increaseStake(INITIAL);
 
-    // test basic staking with a one month time period
-    // run twice to ensure that the last claim time was updated
-    for (var i = 60; i < 365; i = i + 31) {
+    for (var i = 60; i < 600; i = i + 31) {
       console.log("Test for " + i / 30 + " number of months");
-      // use BN 1 as the returned variable doesn't have prototypes
       let supplyAtStart = ONE.multipliedBy(await VYBE.totalSupply());
       let balanceAtStart = await VYBE.balanceOf.call(accounts[0]);
       let fundAtStart = await VYBE.balanceOf.call(accounts[1]);
@@ -66,7 +63,8 @@ contract("Vybe test", async (accounts) => {
           resolve
         );
       });
-      await stake.claimRewards();
+      await stake.claimRewards().then(function (result) {});
+
       let mintagePiece = supplyAtStart
         // get the % of the supply given the amount of passed months
         .dividedBy(new BigNumber(25 + i * 5))
@@ -93,5 +91,12 @@ contract("Vybe test", async (accounts) => {
       }
       // allow a 1% variance due to division rounding
     }
+  });
+  it("Test Claiming NFT", async () => {
+    let VYBE = await VybeToken.deployed();
+    let stake = await VybeStake.deployed();
+    await VYBE.approve(stake.address, INITIAL);
+    await stake.increaseStake(INITIAL);
+    await stake.claimNFT(accounts[0]);
   });
 });

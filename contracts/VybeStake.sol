@@ -235,7 +235,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
             } 
             // check if stake is in the silver tier
             else if 
-            (stakedTime > MONTH.mul(1) &&
+            (stakedTime > MONTH &&
             _lastNFTClaim[msg.sender] > MONTH.mul(1)) 
             {
               result = 1;
