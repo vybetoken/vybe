@@ -168,7 +168,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
              // in basis points (8% APY)
             interestPerMonth = 67;
             // Silver tier
-        } else if (stakedTime > MONTH) {
+        } else {
             // in basis points (5% APY)
             interestPerMonth = 42;
         }
