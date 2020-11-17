@@ -155,17 +155,17 @@ contract VybeStake is ReentrancyGuard, Ownable {
         uint256 interestPerMonth;
         uint256 claimFrom = _lastClaim[msg.sender];
         if (_lastSignificantDecrease[msg.sender] > _lastClaim[msg.sender]) {
-          claimFrom = _lastSignificantDecrease[msg.sender];
+            claimFrom = _lastSignificantDecrease[msg.sender];
         }
         uint256 stakedTime = block.timestamp.sub(claimFrom);
-        
+
         // Platinum Tier
         if (stakedTime > MONTH.mul(6)) {
             // in basis points (10% APY)
             interestPerMonth = 84;
             // Gold Tier
         } else if (stakedTime > MONTH.mul(3)) {
-             // in basis points (8% APY)
+            // in basis points (8% APY)
             interestPerMonth = 67;
             // Silver tier
         } else {
@@ -189,14 +189,14 @@ contract VybeStake is ReentrancyGuard, Ownable {
     // new claim rewards
     function claimRewards() external noReentrancy {
         require(!_dated);
-        require(_staked[msg.sender] > 0, 'user has 0 staked');
+        require(_staked[msg.sender] > 0, "user has 0 staked");
 
         uint256 stakerReward = _calculateStakerReward(msg.sender);
 
         uint256 devPiece = stakerReward.div(100);
 
         stakerReward = stakerReward - devPiece;
-        
+
         require(stakerReward > 0);
         _lastClaim[msg.sender] = block.timestamp;
 
@@ -206,8 +206,8 @@ contract VybeStake is ReentrancyGuard, Ownable {
 
         emit Rewards(msg.sender, stakerReward, devPiece);
     }
-    
 
+    /* 
     function claimNFT(address staker) external noReentrancy {
        uint256 whichTier = NFTclaimable(staker);
        if (whichTier > 0) {
@@ -243,7 +243,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
         
          return result;
     
-    }
+    } */
 
     function addMelody(address melody) external onlyOwner {
         _VYBE.approve(melody, UINT256_MAX);
