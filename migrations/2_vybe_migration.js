@@ -10,7 +10,7 @@ module.exports = async (deployer) => {
   await VYBE.transferOwnership(stake.address);
 
   let loan = await deployer.deploy(VybeLoan, VYBE.address, stake.address);
-  await stake.addMelody(loan.address);
+  await stake.addModule(loan.address);
 
   let dao = await deployer.deploy(VybeDAO, stake.address);
   await stake.upgradeDevelopmentFund(dao.address);

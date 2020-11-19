@@ -11,8 +11,8 @@ interface IVybeStake is IOwnershipTransferrable {
         uint256 mintage,
         uint256 developerFund
     );
-    event MelodyAdded(address indexed melody);
-    event MelodyRemoved(address indexed melody);
+    event ModuleAdded(address indexed module);
+    event ModuleRemoved(address indexed module);
 
     function vybe() external returns (address);
 
@@ -22,9 +22,9 @@ interface IVybeStake is IOwnershipTransferrable {
 
     function lastClaim(address staker) external returns (uint256);
 
-    function addMelody(address melody) external;
+    function addModule(address module) external;
 
-    function removeMelody(address melody) external;
+    function removeModule(address module) external;
 
     function upgrade(address owned, address upgraded) external;
 }

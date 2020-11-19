@@ -246,7 +246,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
     } */
 
     function addModule(address module) external onlyOwner {
-        _VYBE.approve(Module, UINT256_MAX);
+        _VYBE.approve(module, UINT256_MAX);
         emit ModuleAdded(module);
     }
 

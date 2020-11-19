@@ -182,7 +182,7 @@ contract VybeDAO is ReentrancyGuard {
         returns (uint64)
     {
         uint64 proposalID = _createNewProposal(ProposalType.ModuleRemoval);
-        _ModuleRemovalProposals[proposalID] = ModuleRemovalProposal(
+        _moduleRemovalProposals[proposalID] = ModuleRemovalProposal(
             module,
             info
         );
