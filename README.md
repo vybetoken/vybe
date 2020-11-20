@@ -19,7 +19,7 @@ Staking Contract: [VybeStake](https://etherscan.io/address/0x1Bcc32Ac1C994CE7e95
 
 Flash Loan Contract: [VybeLoan](https://etherscan.io/address/0x382EE41496E0Bb88F046F2C0D1Cf894F8D272BD5)
 
-The Loans test suite can be used as an example for how to execute a VybeLoan: [Example](https://github.com/vybetoken/vybe/blob/master/test/loan.sol) 
+Please use [VybeFlashLoan](https://github.com/vybetoken/vybe/blob/master/contracts/VybeFlashLoan.sol) as a reference for Flash loans
 
 ### Bug Bounty
 
