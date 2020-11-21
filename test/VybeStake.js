@@ -46,8 +46,10 @@ contract("Vybe test", async (accounts) => {
     await VYBE.approve(stake.address, 10000);
     await stake.increaseStake(10000);
     var balanceExpected = 10000;
-
-    for (var i = 212; i < 600; i = i + 212) {
+    // 2 years
+    var testDuration = 2 * 365;
+    var i = 30;
+    for (i = i; i <= testDuration; i = i + 212) {
       await new Promise((resolve) => {
         web3.currentProvider.send(
           {
@@ -59,7 +61,7 @@ contract("Vybe test", async (accounts) => {
           resolve
         );
       });
-      await stake.claimRewards().then(function (result) {});
+      await stake.claimRewards();
       var balanceAfter = await stake.staked.call(accounts[0]);
 
       // ensure the staking rewards were paid
@@ -90,44 +92,17 @@ contract("Vybe test", async (accounts) => {
       console.log("\x1b[33m%s\x1b[0m", `Actual balance:`);
       console.log(balanceAfter.toString());
       console.log("----------------------");
-
-      // allow a 1% variance due to division rounding
     }
   });
-  /*   it("Withdrawing before claiming", async () => {
+  it("withdrawing after staking for 2 years", async () => {
     let VYBE = await VybeToken.deployed();
     let stake = await VybeStake.deployed();
-
-    await VYBE.approve(stake.address, 10000);
-    await stake.increaseStake(10000);
-    var balanceExpected = 10000;
-
-    for (var i = 212; i < 600; i = i + 212) {
-      await new Promise((resolve) => {
-        web3.currentProvider.send(
-          {
-            jsonrpc: "2.0",
-            method: "evm_increaseTime",
-            params: [DAY * i],
-            id: null,
-          },
-          resolve
-        );
-      });
-      await stake.decreaseStake(1000);
-      await stake.claimRewards();
-
-      var balanceAfter = await stake.staked.call(accounts[0]);
-
-      // ensure the staking rewards were paid
-      let expected = 0;
-
-      console.log("----------------------");
-      console.log("\x1b[33m%s\x1b[0m", `balance:`);
-      console.log(balanceAfter.toString());
-      console.log("----------------------");
-
-      // allow a 1% variance due to division rounding
-    }
-  }); */
+    var withdrawAll = await stake.staked.call(accounts[0]);
+    console.log("--------------------");
+    console.log(`Withdrawing entire Balance of: ${withdrawAll}`);
+    await stake.decreaseStake(withdrawAll - 10);
+    console.log("--------------------");
+    var checkWithdrawn = await stake.staked.call(accounts[0]);
+    assert(checkWithdrawn.isEqualTo(0));
+  });
 });
