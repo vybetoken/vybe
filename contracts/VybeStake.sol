@@ -23,7 +23,6 @@ contract VybeStake is ReentrancyGuard, Ownable {
     uint256 _totalStaked;
     mapping(address => uint256) private _staked;
     mapping(address => uint256) private _lastClaim;
-    mapping(address => uint256) private _firstDeposit;
     mapping(address => uint256) private _lastSignificantDecrease;
     mapping(address => uint256) private _lastDecrease;
     mapping(address => uint256) private _lastNFTClaim;
@@ -97,13 +96,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
 
         require(_VYBE.transferFrom(msg.sender, address(this), amount));
         _totalStaked = _totalStaked.add(amount);
-
         _lastClaim[msg.sender] = block.timestamp;
-        // checks if this is the stakers first deposit
-        if (_firstDeposit[msg.sender] == 0) {
-            _firstDeposit[msg.sender] = block.timestamp;
-        }
-
         _staked[msg.sender] = _staked[msg.sender].add(amount);
         emit StakeIncreased(msg.sender, amount);
     }
@@ -122,7 +115,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
             _lastDecrease[msg.sender] = block.timestamp;
             // If they withdraw more than 5% or withdraw less then 5% twice in 1 month then their tier is reset
         } else {
-            _firstDeposit[msg.sender] = block.timestamp;
+            _lastClaim[msg.sender] = block.timestamp;
         }
         emit StakeDecreased(msg.sender, amount);
     }
