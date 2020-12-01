@@ -11,14 +11,19 @@ contract VybeLP is Ownable{
     event LiquidityRemoved(uint256 EthAmount, uint256 VybeAmount, address Provider);
     event RewardsClaimed(uint256 Reward, address Provider);
 
-  constructor(address uniswap, address vybetoken) public Ownable(msg.sender){
+    mapping (address => uint256) _LPbalances;
+    mapping (address => uint256) _LPLastClaim;
+
+  constructor(address uniswapPool, address vybetoken, address WethContract) public Ownable(msg.sender){
      // Contract for the Vybe pool on uniswap
-     _UNI = Uni(uniswap);
+     _UNI = Uni(uniswapPool);
      _VYBE = Vybe(vybetoken);
+     _WETH = Weth(WethContract)
   }
 
-  function addLiquidity(uint256 VybeAmount, uint256 EthAmount) external {
+  function addLiquidity(uint256 EthAmount, uint256 VybeAmount) external {
       require(amount > 0);
+
 
       
       
