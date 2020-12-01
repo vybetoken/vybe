@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-import "./Ownable.sol"
+import "./IOwnershipTransferrable.sol";
 
 contract VybeLP is Ownable{
     Uni private _UNI;
@@ -19,6 +19,7 @@ contract VybeLP is Ownable{
 
   function addLiquidity(uint256 VybeAmount, uint256 EthAmount) external {
       require(amount > 0);
+
       
       
     emit LiquidityAdded(EthAmount, VybeAmount, msg.sender);
