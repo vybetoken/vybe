@@ -116,8 +116,9 @@ contract VybeStake is ReentrancyGuard, Ownable {
             // If they withdraw more than 5% or withdraw less then 5% twice in 1 month then their tier is reset
         } else {
             _lastClaim[msg.sender] = block.timestamp;
+
+            emit StakeDecreased(msg.sender, amount);
         }
-        emit StakeDecreased(msg.sender, amount);
     }
 
     function calculateSupplyDivisor() public view returns (uint256) {

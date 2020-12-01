@@ -43,8 +43,8 @@ contract("Vybe test", async (accounts) => {
     let VYBE = await VybeToken.deployed();
     let stake = await VybeStake.deployed();
 
-    await VYBE.approve(stake.address, 10000);
-    await stake.increaseStake(10000);
+    await VYBE.approve(stake.address, 100000);
+    await stake.increaseStake(100000);
     var balanceExpected = 10000;
     // 2 years
     var testDuration = 2 * 365;
@@ -100,9 +100,12 @@ contract("Vybe test", async (accounts) => {
     var withdrawAll = await stake.staked.call(accounts[0]);
     console.log("--------------------");
     console.log(`Withdrawing entire Balance of: ${withdrawAll}`);
-    await stake.decreaseStake(withdrawAll - 10);
+    await stake.decreaseStake(9700);
+    await stake.decreaseStake(2000);
+    console.log("--------------------");
     console.log("--------------------");
     var checkWithdrawn = await stake.staked.call(accounts[0]);
-    assert(checkWithdrawn.isEqualTo(0));
+    console.log(`New balance: ${checkWithdrawn}`);
+    console.log("--------------------");
   });
 });
