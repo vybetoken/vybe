@@ -186,7 +186,6 @@ contract VybeStake is ReentrancyGuard, Ownable {
         require(_staked[msg.sender] > 0, "user has 0 staked");
 
         uint256 stakerReward = _calculateStakerReward(msg.sender);
-
         uint256 devPiece = stakerReward.div(100);
 
         stakerReward = stakerReward - devPiece;
