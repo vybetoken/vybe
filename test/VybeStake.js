@@ -2,6 +2,7 @@ const BigNumber = require("bignumber.js");
 
 let VybeToken = artifacts.require("Vybe");
 let VybeStake = artifacts.require("VybeStake");
+let VybeStake = artifacts.require("VybeLP");
 
 const ONE = new BigNumber(1);
 const DAY = 60 * 60 * 24;
@@ -108,4 +109,5 @@ contract("Vybe test", async (accounts) => {
     console.log(`New balance: ${checkWithdrawn}`);
     console.log("--------------------");
   });
+  it;
 });
