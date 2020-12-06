@@ -1,6 +1,9 @@
 let VybeLP = artifacts.require("VybeLP");
 let Vybe = artifacts.require("Vybe");
 let LPtokensmock = artifacts.require("LPtokensmock");
+let RewardsDistributionRecipient = artifacts.require(
+  "RewardsDistributionRecipient"
+);
 const BigNumber = require("bignumber.js");
 
 function amounts(n) {
@@ -13,24 +16,32 @@ contract("UniswapLP rewards", (accounts) => {
   const liquidityProviders = [accounts[1], accounts[2], accounts[3]];
   before(async () => {
     // deploys contract
-    vybelp = await VybeLP.new();
+
     vybe = await Vybe.new();
     lp = await LPtokensmock.new();
-    for (i = 0; i < liquidityProviders.length - 1; i++) {
+    vybelp = await VybeLP.new(contractAddress, vybe.address, lp.address);
+    for (i = 0; i < liquidityProviders.length; i++) {
       await lp.transfer(liquidityProviders[i], amounts("10"), {
         from: contractAddress,
       });
     }
   });
-  it("Balance of the farm should have 20000 Opt", async () => {
-    let balance = await opt.balanceOf(farm.address);
-    assert.equal(balance.toString(), web3.utils.toWei("20000"));
-  });
-  it("Deposit Dai and withdraw Dai from DaiFarm", async () => {
-    let daiBalance = await dai.balanceOf(investor[0]);
-    await dai.approve(farm.address, daiBalance, { from: investor[0] });
-    await farm.addLiquidity(daiBalance, { from: investor[0] });
-    let balance = await farm.getBalance({ from: investor[0] });
-    await farm.removeLiquidity("0", { from: investor[0] });
+  it("Depositing LP tokens", async () => {
+    let lpBalance = await lp.balanceOf(liquidityProviders[0]);
+    await lp.approve(vybelp.address, lpBalance, {
+      from: liquidityProviders[0],
+    });
+    await vybelp.stake(amounts("10"), { from: liquidityProviders[0] });
+    await new Promise((resolve) => {
+      web3.currentProvider.send(
+        {
+          jsonrpc: "2.0",
+          method: "evm_increaseTime",
+          params: [DAY * 30],
+          id: null,
+        },
+        resolve
+      );
+    });
   });
 });

@@ -114,7 +114,7 @@ contract VybeLP is RewardsDistributionRecipient, ReentrancyGuard {
         uint256 reward = rewards[msg.sender];
         if (reward > 0) {
             rewards[msg.sender] = 0;
-            rewardsToken.safeTransfer(msg.sender, reward);
+            rewardsToken.mint(msg.sender, reward)
             emit RewardPaid(msg.sender, reward);
         }
     }

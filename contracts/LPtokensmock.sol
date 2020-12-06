@@ -4,7 +4,7 @@ pragma solidity ^0.6.0;
 import "node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 import "./Ownable.sol";
 
-contract Vybe is Ownable {
+contract LPtokensmock is Ownable {
     using SafeMath for uint256;
 
     uint256 constant UINT256_MAX = ~uint256(0);
