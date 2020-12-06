@@ -22,7 +22,7 @@ contract VybeLP is RewardsDistributionRecipient, ReentrancyGuard {
     Vybe public rewardsToken;
     IERC20 public stakingToken;
     uint256 public periodFinish = 0;
-    uint256 public rewardRate = 0;
+    uint256 public rewardRate = 2000;
     uint256 public rewardsDuration = 60 days;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;

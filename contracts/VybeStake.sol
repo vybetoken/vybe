@@ -25,7 +25,6 @@ contract VybeStake is ReentrancyGuard, Ownable {
     mapping(address => uint256) private _lastClaim;
     mapping(address => uint256) private _lastSignificantDecrease;
     mapping(address => uint256) private _lastDecrease;
-    mapping(address => uint256) private _lastNFTClaim;
     address private _developerFund;
 
     event StakeIncreased(address indexed staker, uint256 amount);
