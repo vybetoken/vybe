@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
+import {Vybe} from "./vybe.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/math/Math.sol";
 import {SafeMath} from "./SafeMath.sol";
@@ -18,7 +19,7 @@ contract VybeLP is RewardsDistributionRecipient, ReentrancyGuard {
 
     /* ========== STATE VARIABLES ========== */
 
-    IERC20 public rewardsToken;
+    Vybe public rewardsToken;
     IERC20 public stakingToken;
     uint256 public periodFinish = 0;
     uint256 public rewardRate = 0;
@@ -39,7 +40,7 @@ contract VybeLP is RewardsDistributionRecipient, ReentrancyGuard {
         address _rewardsToken,
         address _stakingToken
     ) public {
-        rewardsToken = IERC20(_rewardsToken);
+        rewardsToken = Vybe(_rewardsToken);
         stakingToken = IERC20(_stakingToken);
         rewardsDistribution = _rewardsDistribution;
     }
@@ -114,7 +115,7 @@ contract VybeLP is RewardsDistributionRecipient, ReentrancyGuard {
         uint256 reward = rewards[msg.sender];
         if (reward > 0) {
             rewards[msg.sender] = 0;
-            rewardsToken.mint(msg.sender, reward)
+            rewardsToken.mint(msg.sender, reward);
             emit RewardPaid(msg.sender, reward);
         }
     }
