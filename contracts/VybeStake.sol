@@ -5,26 +5,26 @@ import "node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 import "./IOwnershipTransferrable.sol";
 import "./ReentrancyGuard.sol";
 import "./Vybe.sol";
-import "./TierReward.sol";
 
 contract VybeStake is ReentrancyGuard, Ownable {
     using SafeMath for uint256;
 
     uint256 constant UINT256_MAX = ~uint256(0);
     uint256 constant MONTH = 30 days;
-
+    // =============Vybe===================//
     Vybe private _VYBE;
-    TierReward private _TierReward;
 
     bool private _dated;
     bool private _migrated;
     uint256 _deployedAt;
 
     uint256 _totalStaked;
+
     mapping(address => uint256) private _staked;
     mapping(address => uint256) private _lastClaim;
     mapping(address => uint256) private _lastSignificantDecrease;
     mapping(address => uint256) private _lastDecrease;
+
     address private _developerFund;
 
     event StakeIncreased(address indexed staker, uint256 amount);
@@ -43,6 +43,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
         _deployedAt = block.timestamp;
     }
 
+    //===============VYBE=================//
     function upgradeDevelopmentFund(address fund) external onlyOwner {
         _developerFund = fund;
     }
@@ -54,9 +55,6 @@ contract VybeStake is ReentrancyGuard, Ownable {
     function totalStaked() external view returns (uint256) {
         return _totalStaked;
     }
-
-    // To do
-    // function viewAllStakers() external view returns (address[] memory) {}
 
     function migrate(
         address previous,
@@ -120,25 +118,6 @@ contract VybeStake is ReentrancyGuard, Ownable {
         }
     }
 
-    function calculateSupplyDivisor() public view returns (uint256) {
-        // base divisior for 5%
-        uint256 result = uint256(20).add(
-            // get how many months have passed since deployment
-            block
-                .timestamp
-                .sub(_deployedAt)
-                .div(MONTH)
-            // multiply by 5 which will be added, tapering from 20 to 50
-                .mul(5)
-        );
-
-        // set a cap of 50
-        if (result > 50) {
-            result = 50;
-        }
-        return result;
-    }
-
     // New function for calculating profit
     function _calculateStakerReward(address staker)
         public
@@ -198,44 +177,6 @@ contract VybeStake is ReentrancyGuard, Ownable {
 
         emit Rewards(msg.sender, stakerReward, devPiece);
     }
-
-    /* 
-    function claimNFT(address staker) external noReentrancy {
-       uint256 whichTier = NFTclaimable(staker);
-       if (whichTier > 0) {
-            _TierReward.mint(msg.sender, whichTier);
-       }
-    }
-
-    function NFTclaimable(address staker) public view returns (uint256) {
-        uint256 stakedTime = block.timestamp.sub(_lastClaim[staker]);
-        uint256 result = 0;
-       if (
-            stakedTime > MONTH.mul(6) &&
-            _lastNFTClaim[msg.sender] > MONTH.mul(1)
-        ) {
-
-          result = 3;
-
-          }
-          // check if staker is in the gold tier 
-          else if 
-          (stakedTime > MONTH.mul(3) &&
-            _lastNFTClaim[msg.sender] > MONTH.mul(1))
-             {
-              result = 2;
-            } 
-            // check if stake is in the silver tier
-            else if 
-            (stakedTime > MONTH &&
-            _lastNFTClaim[msg.sender] > MONTH.mul(1)) 
-            {
-              result = 1;
-            }
-        
-         return result;
-    
-    } */
 
     function addModule(address module) external onlyOwner {
         _VYBE.approve(module, UINT256_MAX);

@@ -26,6 +26,7 @@ contract("UniswapLP rewards", (accounts) => {
         from: contractAddress,
       });
     }
+    await vybe.transfer(vybelp.address, "10000000");
   });
   it("1 user depositing LP tokens, waiting 1 month and exiting", async () => {
     // check staker balance
@@ -53,6 +54,7 @@ contract("UniswapLP rewards", (accounts) => {
     // check balance
     let stakedBalance = await vybelp.balanceOf(liquidityProviders[0]);
     console.log((stakedBalance / 1e18).toString());
+    await vybelp.getReward({ from: liquidityProviders[0] });
 
     let vybeBalance = await vybelp.earned(liquidityProviders[0]);
     lpBalance = await vybelp.balanceOf(liquidityProviders[0]);
