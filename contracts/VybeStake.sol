@@ -43,12 +43,14 @@ contract VybeStake is ReentrancyGuard, Ownable {
     mapping(address => uint256) private _lpStaked;
     mapping(address => uint256) private _lpLastClaim;
     uint256 totalLpStaked;
+    uint256 totalLpStakedUnrewarded;
     uint256 startOfPeriod;
     uint256 monthlyLPReward;
 
 
     event StakeIncreasedLP(address indexed lpStaker, uint256 amount);
     event StakeDecreasedLP(address indexed lpStaker, uint256 amount);
+    event RewardsLP(address indexed staker, uint256 mintage);
 
     constructor(address vybe, address lpvybe) public Ownable(msg.sender) {
         _VYBE = Vybe(vybe);
@@ -233,22 +235,29 @@ contract VybeStake is ReentrancyGuard, Ownable {
             emit StakeDecreasedLP(msg.sender, amount);
         
     }
-    function timeLeftToClaim() public view returns {
+    function timeLeftTillNextClaim() public view returns {
         return block.timestamp.sub(startOfPeriod).sub(30 days);
     } 
-    function claimLpRewards(uint256 amount)  external noReentrancy updateLPReward(address account){
+    function claimLpRewards()  external noReentrancy updateLPReward(address account){
         require(_lpLastClaim[msg.sender] < startOfPeroid);
+        // gets the amount of rewards per token
         uint256 lpRewardPerToken = monthlyLPReward.div(totalLpstaked());
-        uint256 lpReward = lpRewardPerToken.mul(_lpStaked[msg.sender]);
-
-
-        
-
+        // get the exact reward amount
+        uint256 lpReward = lpRewardPerToken.mul(_lpStaked[msg.sender]); 
+        // subtracts the amount been taken from the unrewarded variable
+        totalLpStakedUnrewarded = totalLpStakedUnrewarded.sub(_lpStaked[msg.sender]);
+        _VYBE.mint(address(this), lpReward);
+        emit RewardsLP(msg.sender, lpReward);
     }
     modifier updateLPReward(msg.sender) {
         require(block.timestamp.sub(startOfPeriod) > 30 days);
+        // gets 2% of the vybe supply
             monthlyLPReward = _VYBE.totalSupply().div(10000).mul(16);
+        // resets the start date
             startOfPeriod = block.timestamp;      
+        // reset the unrewarded LP tokens
+            totalLpStakedUnrewarded = totalLpStaked;
+
         
     }
 }
