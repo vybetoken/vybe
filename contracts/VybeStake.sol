@@ -5,6 +5,7 @@ import "node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 import "./IOwnershipTransferrable.sol";
 import "./ReentrancyGuard.sol";
 import "./Vybe.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract VybeStake is ReentrancyGuard, Ownable {
     using SafeMath for uint256;
@@ -37,10 +38,24 @@ contract VybeStake is ReentrancyGuard, Ownable {
     event ModuleAdded(address indexed module);
     event ModuleRemoved(address indexed module);
 
-    constructor(address vybe) public Ownable(msg.sender) {
+    // ========== Vybe LP =========== //
+    IERC20 private _LP;
+    mapping(address => uint256) private _lpStaked;
+    mapping(address => uint256) private _lpLastClaim;
+    uint256 totalLpStaked;
+    uint256 startOfPeriod;
+    uint256 monthlyLPReward;
+
+
+    event StakeIncreasedLP(address indexed lpStaker, uint256 amount);
+    event StakeDecreasedLP(address indexed lpStaker, uint256 amount);
+
+    constructor(address vybe, address lpvybe) public Ownable(msg.sender) {
         _VYBE = Vybe(vybe);
         _developerFund = msg.sender;
         _deployedAt = block.timestamp;
+        _LP = IERC20(lpvybe)
+        startOfPeriod = block.timestamp;
     }
 
     //===============VYBE=================//
@@ -192,4 +207,46 @@ contract VybeStake is ReentrancyGuard, Ownable {
         _dated = true;
         IOwnershipTransferrable(owned).transferOwnership(upgraded);
     }
+
+    // ============= Vybe LP =============== //
+
+    function totalLpStaked() external view returns (uint256) {
+        return _totalLpStaked;
+    }
+
+    function increaseLpStake(uint256 amount) external {
+        require(!_dated);
+
+        require(_LP.transferFrom(msg.sender, address(this), amount));
+        _totalLpStaked = _totalLpStaked.add(amount);
+        _lpLastClaim[msg.sender] = block.timestamp;
+        _lpStaked[msg.sender] = _lpStaked[msg.sender].add(amount);
+        emit StakeIncreasedLP(msg.sender, amount);
+    }
+
+    function decreaseLpStake(uint256 amount) external {
+        _lpStaked[msg.sender] = _lpStaked[msg.sender].sub(amount);
+        _totalLpStaked = _totalLpStaked.sub(amount);
+        require(_LP.transfer(address(msg.sender), amount));
+
+            _lpLastClaim[msg.sender] = block.timestamp;
+            emit StakeDecreasedLP(msg.sender, amount);
+        
+    }
+    function claimLpRewards(uint256 amount)  external noReentrancy updateLPReward(address account){
+        uint256 totalInflationAmount = _VYBE.totalSupply().mul(10000).div(200).div(30 days);
+        uint256 timeSinceLastLpClaim = block.timestamp.sub(_lpLastClaim[msg.sender]);
+        uint256 interestPerTokenMonthly = 
+
+
+    }
+    modifier updateLPReward(msg.sender) {
+        if (block.timestamp.sub(startOfPeriod) > 30 days) {
+            monthlyLPReward = _VYBE.totalSupply().mul(10000).div(200).div(30 days);
+            startOfPeriod = block.timestamp;      
+        }
+
+
+    }
 }
+

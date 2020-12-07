@@ -4,7 +4,7 @@ pragma solidity ^0.6.0;
 import "node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 import "./Ownable.sol";
 
-contract LPtokensmock is Ownable {
+contract LPVybe is Ownable {
     using SafeMath for uint256;
 
     uint256 constant UINT256_MAX = ~uint256(0);
@@ -25,8 +25,8 @@ contract LPtokensmock is Ownable {
     );
 
     constructor() public Ownable(msg.sender) {
-        _name = "MockLP";
-        _symbol = "LP";
+        _name = "LPVybe";
+        _symbol = "LPVYBE";
         _decimals = 18;
 
         _totalSupply = 100 * 1e18;

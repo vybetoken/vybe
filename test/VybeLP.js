@@ -50,21 +50,16 @@ contract("UniswapLP rewards", (accounts) => {
         resolve
       );
     });
-    await vybelp.notifyRewardAmount("10000", { from: accounts[0] });
     // check balance
-    let stakedBalance = await vybelp.balanceOf(liquidityProviders[0]);
-    console.log((stakedBalance / 1e18).toString());
-    await vybelp.getReward({ from: liquidityProviders[0] });
-
-    let vybeBalance = await vybelp.earned(liquidityProviders[0]);
-    lpBalance = await vybelp.balanceOf(liquidityProviders[0]);
-    rewardPerToken = await vybelp.rewardPerToken();
-
+    await vybelp.notifyRewardAmount("10000", { from: accounts[0] });
+    let lpBalanceAfter = await vybelp.balanceOf(liquidityProviders[0]);
+    await vybelp.exit({ from: liquidityProviders[0] });
+    let vybeRewards = await vybelp.earned(liquidityProviders[0]);
+    let _rewardPerToken = await vybelp.rewardPerToken();
+    console.log(_rewardPerToken.toString());
     console.log("-------AFTER--------");
-    console.log(`Reward per token: ${rewardPerToken}`);
-
-    console.log(`Vybe rewarded: ${(vybeBalance / 1e18).toString()}`);
-    console.log(`LP tokens: ${(lpBalance / 1e18).toString()}`);
+    console.log(`Vybe rewarded: ${(vybeRewards / 1e18).toString()}`);
+    console.log(`LP tokens: ${(lpBalanceAfter / 1e18).toString()}`);
     console.log(`For 30 days`);
 
     console.log("--------------------");

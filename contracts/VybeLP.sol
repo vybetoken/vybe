@@ -23,7 +23,7 @@ contract VybeLP is RewardsDistributionRecipient, ReentrancyGuard {
     IERC20 public stakingToken;
     uint256 public periodFinish = 0;
     uint256 public rewardRate = 2000;
-    uint256 public rewardsDuration = 60 days;
+    uint256 public rewardsDuration = 1 days;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
 
@@ -113,11 +113,9 @@ contract VybeLP is RewardsDistributionRecipient, ReentrancyGuard {
 
     function getReward() public nonReentrant updateReward(msg.sender) {
         uint256 reward = rewards[msg.sender];
-        if (reward > 0) {
-            rewards[msg.sender] = 0;
-            rewardsToken.mint(msg.sender, reward);
-            emit RewardPaid(msg.sender, reward);
-        }
+        rewards[msg.sender] = 0;
+        rewardsToken.transfer(msg.sender, reward);
+        emit RewardPaid(msg.sender, reward);
     }
 
     function exit() external {
