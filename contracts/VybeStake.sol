@@ -233,20 +233,23 @@ contract VybeStake is ReentrancyGuard, Ownable {
             emit StakeDecreasedLP(msg.sender, amount);
         
     }
+    function timeLeftToClaim() public view returns {
+        return block.timestamp.sub(startOfPeriod).sub(30 days);
+    } 
     function claimLpRewards(uint256 amount)  external noReentrancy updateLPReward(address account){
-        uint256 totalInflationAmount = _VYBE.totalSupply().mul(10000).div(200).div(30 days);
-        uint256 timeSinceLastLpClaim = block.timestamp.sub(_lpLastClaim[msg.sender]);
-        uint256 interestPerTokenMonthly = 
+        require(_lpLastClaim[msg.sender] < startOfPeroid);
+        uint256 lpRewardPerToken = monthlyLPReward.div(totalLpstaked());
+        uint256 lpReward = lpRewardPerToken.mul(_lpStaked[msg.sender]);
 
+
+        
 
     }
     modifier updateLPReward(msg.sender) {
-        if (block.timestamp.sub(startOfPeriod) > 30 days) {
-            monthlyLPReward = _VYBE.totalSupply().mul(10000).div(200).div(30 days);
+        require(block.timestamp.sub(startOfPeriod) > 30 days);
+            monthlyLPReward = _VYBE.totalSupply().div(10000).mul(16);
             startOfPeriod = block.timestamp;      
-        }
-
-
+        
     }
 }
 
