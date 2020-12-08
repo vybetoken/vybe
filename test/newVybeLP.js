@@ -32,51 +32,63 @@ contract("VybeStake", (accounts) => {
       });
     }
     await vybe.transferOwnership(stake.address);
-  });
-  it("deposit LP tokens", async () => {
     // ============ all liquidity providers increase stake ============ //
     for (i = 0; i < liquidityProviders.length; i++) {
       await stake.increaseLpStake(amounts("99"), {
         from: liquidityProviders[i],
       });
     }
-
-    // ============== change time to 31 days in the future ============ //
-    await new Promise((resolve) => {
-      web3.currentProvider.send(
-        {
-          jsonrpc: "2.0",
-          method: "evm_increaseTime",
-          params: [DAY * 40],
-          id: null,
-        },
-        resolve
+  });
+  it("deposit LP tokens", async () => {
+    for (let x = 30; x <= 365; x = x + 30) {
+      let totalRewardsGiven = 0;
+      console.log(
+        "\x1b[33m%s\x1b[0m",
+        `========== Month ${x / 30} ===========`
       );
-    });
-    let monthlyLPReward = await stake._monthlyLPReward();
-    let totalLpStakedUnrewarded = await stake._totalLpStakedUnrewarded();
-    console.log(`Starting stats after 1 month`);
-    console.log(`monthlyLPReward: ${monthlyLPReward / 1e18}`);
-    // ============== all Liquidity providers claim rewards =========== //
-    for (i = 0; i < liquidityProviders.length; i++) {
-      await stake.claimLpRewards({
-        from: liquidityProviders[i],
+      // ============== change time to 31 days in the future ============ //
+      await new Promise((resolve) => {
+        web3.currentProvider.send(
+          {
+            jsonrpc: "2.0",
+            method: "evm_increaseTime",
+            params: [DAY * x],
+            id: null,
+          },
+          resolve
+        );
       });
-      let LpStaked = await stake.lpBalanceOf(liquidityProviders[i]);
-      let vybeRewarded = await vybe.balanceOf(liquidityProviders[i]);
-      console.log(`========== Liquidity Provider ${i + 1} Stats =========`);
-      console.log("\x1b[33m%s\x1b[0m", `Lp staked: ${LpStaked / 1e18}`);
-      console.log("\x1b[33m%s\x1b[0m", `Lp rewarded: ${vybeRewarded / 1e18}`);
+      let monthlyLPReward = await stake._monthlyLPReward();
+      let totalLpStakedUnrewarded = await stake._totalLpStakedUnrewarded();
+      console.log(`Starting stats after 1 month`);
+      console.log(`monthlyLPReward: ${monthlyLPReward / 1e18}`);
+      // ============== all Liquidity providers claim rewards =========== //
+      for (i = 0; i < liquidityProviders.length; i++) {
+        await stake.claimLpRewards({
+          from: liquidityProviders[i],
+        });
+        let LpStaked = await stake.lpBalanceOf(liquidityProviders[i]);
+        let vybeRewarded = await vybe.balanceOf(liquidityProviders[i]);
+        console.log(`========== Liquidity Provider ${i + 1} Stats =========`);
+        console.log("\x1b[33m%s\x1b[0m", `Lp staked: ${LpStaked / 1e18}`);
+        console.log("\x1b[33m%s\x1b[0m", `Lp rewarded: ${vybeRewarded / 1e18}`);
 
-      monthlyLPReward = await stake._monthlyLPReward();
-      totalLpStakedUnrewarded = await stake._totalLpStakedUnrewarded();
+        monthlyLPReward = await stake._monthlyLPReward();
+        totalLpStakedUnrewarded = await stake._totalLpStakedUnrewarded();
+        console.log(
+          "\x1b[36m%s\x1b[0m",
+          `Total LP Reward left: ${monthlyLPReward / 1e18}`
+        );
+        console.log(
+          "\x1b[36m%s\x1b[0m",
+          `Total Unrewarded LP staked: ${totalLpStakedUnrewarded / 1e18}`
+        );
+        if (x / 30 >= 12) {
+          totalRewardsGiven = totalRewardsGiven + vybeRewarded;
+        }
+      }
       console.log(
-        "\x1b[36m%s\x1b[0m",
-        `Total LP Reward left: ${monthlyLPReward / 1e18}`
-      );
-      console.log(
-        "\x1b[36m%s\x1b[0m",
-        `Total Unrewarded LP staked: ${totalLpStakedUnrewarded / 1e18}`
+        "total amount of rewards for the year is: " + totalRewardsGiven
       );
     }
   });
