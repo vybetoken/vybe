@@ -42,11 +42,10 @@ contract VybeStake is ReentrancyGuard, Ownable {
     IERC20 private _LP;
     mapping(address => uint256) private _lpStaked;
     mapping(address => uint256) private _lpLastClaim;
-    uint256 totalLpStaked;
+    uint256 _totalLpStaked;
     uint256 totalLpStakedUnrewarded;
     uint256 startOfPeriod;
     uint256 monthlyLPReward;
-
 
     event StakeIncreasedLP(address indexed lpStaker, uint256 amount);
     event StakeDecreasedLP(address indexed lpStaker, uint256 amount);
@@ -56,7 +55,9 @@ contract VybeStake is ReentrancyGuard, Ownable {
         _VYBE = Vybe(vybe);
         _developerFund = msg.sender;
         _deployedAt = block.timestamp;
-        _LP = IERC20(lpvybe)
+        _LP = IERC20(lpvybe);
+        monthlyLPReward = _VYBE.totalSupply().div(10000).mul(16);
+        // resets the start date
         startOfPeriod = block.timestamp;
     }
 
@@ -219,7 +220,10 @@ contract VybeStake is ReentrancyGuard, Ownable {
     function increaseLpStake(uint256 amount) external {
         require(!_dated);
 
-        require(_LP.transferFrom(msg.sender, address(this), amount));
+        require(
+            _LP.transferFrom(msg.sender, address(this), amount),
+            "Can't transfer"
+        );
         _totalLpStaked = _totalLpStaked.add(amount);
         _lpLastClaim[msg.sender] = block.timestamp;
         _lpStaked[msg.sender] = _lpStaked[msg.sender].add(amount);
@@ -231,34 +235,50 @@ contract VybeStake is ReentrancyGuard, Ownable {
         _totalLpStaked = _totalLpStaked.sub(amount);
         require(_LP.transfer(address(msg.sender), amount));
 
-            _lpLastClaim[msg.sender] = block.timestamp;
-            emit StakeDecreasedLP(msg.sender, amount);
-        
+        _lpLastClaim[msg.sender] = block.timestamp;
+        emit StakeDecreasedLP(msg.sender, amount);
     }
-    function timeLeftTillNextClaim() public view returns {
+
+    function lpBalanceOf(address account) public view returns (uint256) {
+        return _lpStaked[account];
+    }
+
+    function timeLeftTillNextClaim() public view returns (uint256) {
         return block.timestamp.sub(startOfPeriod).sub(30 days);
-    } 
-    function claimLpRewards()  external noReentrancy updateLPReward(address account){
-        require(_lpLastClaim[msg.sender] < startOfPeroid);
+    }
+
+    function _monthlyLPReward() public view returns (uint256) {
+        return monthlyLPReward;
+    }
+
+    function _totalLpStakedUnrewarded() public view returns (uint256) {
+        return totalLpStakedUnrewarded;
+    }
+
+    function claimLpRewards() external noReentrancy updateLPReward() {
+        require(_lpLastClaim[msg.sender] < startOfPeriod);
         // gets the amount of rewards per token
-        uint256 lpRewardPerToken = monthlyLPReward.div(totalLpstaked());
+        uint256 lpRewardPerToken = monthlyLPReward.div(totalLpStakedUnrewarded);
         // get the exact reward amount
-        uint256 lpReward = lpRewardPerToken.mul(_lpStaked[msg.sender]); 
+        uint256 lpReward = lpRewardPerToken.mul(_lpStaked[msg.sender]);
         // subtracts the amount been taken from the unrewarded variable
-        totalLpStakedUnrewarded = totalLpStakedUnrewarded.sub(_lpStaked[msg.sender]);
-        _VYBE.mint(address(this), lpReward);
+        totalLpStakedUnrewarded = totalLpStakedUnrewarded.sub(
+            _lpStaked[msg.sender]
+        );
+        monthlyLPReward = monthlyLPReward.sub(lpReward);
+        _VYBE.mint(msg.sender, lpReward);
         emit RewardsLP(msg.sender, lpReward);
     }
-    modifier updateLPReward(msg.sender) {
-        require(block.timestamp.sub(startOfPeriod) > 30 days);
-        // gets 2% of the vybe supply
-            monthlyLPReward = _VYBE.totalSupply().div(10000).mul(16);
-        // resets the start date
-            startOfPeriod = block.timestamp;      
-        // reset the unrewarded LP tokens
-            totalLpStakedUnrewarded = totalLpStaked;
 
-        
+    modifier updateLPReward() {
+        if (block.timestamp.sub(startOfPeriod) > 30 days) {
+            // gets 2% of the vybe supply
+            monthlyLPReward = _VYBE.totalSupply().div(10000).mul(16);
+            // resets the start date
+            startOfPeriod = block.timestamp;
+            // reset the unrewarded LP tokens
+            totalLpStakedUnrewarded = _totalLpStaked;
+        }
+        _;
     }
 }
-

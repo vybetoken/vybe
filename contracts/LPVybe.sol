@@ -29,7 +29,7 @@ contract LPVybe is Ownable {
         _symbol = "LPVYBE";
         _decimals = 18;
 
-        _totalSupply = 100 * 1e18;
+        _totalSupply = 10000 * 1e18;
         _balances[msg.sender] = _totalSupply;
         emit Transfer(address(0), msg.sender, _totalSupply);
     }
