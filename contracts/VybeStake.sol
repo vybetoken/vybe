@@ -273,7 +273,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
     modifier updateLPReward() {
         if (block.timestamp.sub(startOfPeriod) > 30 days) {
             // gets 2% of the vybe supply
-            monthlyLPReward = _VYBE.totalSupply().div(10000).mul(16);
+            monthlyLPReward = _VYBE.totalSupply().div(10000).mul(41);
             // resets the start date
             startOfPeriod = block.timestamp;
             // reset the unrewarded LP tokens

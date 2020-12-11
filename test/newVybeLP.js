@@ -10,9 +10,18 @@ function amounts(n) {
 }
 
 contract("VybeStake", (accounts) => {
-  let vybe, lp, stake;
+  let vybe, lp, stake, vybeAmount;
   const contractAddress = accounts[0];
-  const liquidityProviders = [accounts[1], accounts[2], accounts[3]];
+  const liquidityProviders = [
+    accounts[1],
+    accounts[2],
+    accounts[3],
+    accounts[4],
+    accounts[5],
+    accounts[6],
+    accounts[7],
+    accounts[8],
+  ];
   before(async () => {
     // ======== Deploy all contracts ========== //
     vybe = await VybeToken.new();
@@ -20,21 +29,22 @@ contract("VybeStake", (accounts) => {
     stake = await VybeStake.new(vybe.address, lp.address);
     // ========== Give all liquidity providers some LP tokens and approve stake contract for transfering them ============ //
     for (i = 0; i < liquidityProviders.length; i++) {
-      await lp.transfer(liquidityProviders[i], amounts("100"), {
+      await lp.transfer(liquidityProviders[i], amounts("101"), {
         from: contractAddress,
       });
       console.log(`Starting LP token balance on LP ${i}`);
       console.log(
         ((await lp.balanceOf(liquidityProviders[i])) / 1e18).toString()
       );
-      await lp.approve(stake.address, amounts("100"), {
-        from: liquidityProviders[i],
-      });
     }
     await vybe.transferOwnership(stake.address);
     // ============ all liquidity providers increase stake ============ //
     for (i = 0; i < liquidityProviders.length; i++) {
-      await stake.increaseLpStake(amounts("99"), {
+      vybeAmount = (Math.floor(Math.random() * 100) + 1).toString();
+      await lp.approve(stake.address, amounts(vybeAmount), {
+        from: liquidityProviders[i],
+      });
+      await stake.increaseLpStake(amounts(vybeAmount), {
         from: liquidityProviders[i],
       });
     }
@@ -84,11 +94,13 @@ contract("VybeStake", (accounts) => {
           `Total Unrewarded LP staked: ${totalLpStakedUnrewarded / 1e18}`
         );
         if (x / 30 >= 12) {
-          totalRewardsGiven = totalRewardsGiven + vybeRewarded;
+          totalRewardsGiven =
+            totalRewardsGiven + parseFloat(vybeRewarded / 1e18);
         }
       }
       console.log(
-        "total amount of rewards for the year is: " + totalRewardsGiven
+        "total amount of rewards for the year is: " +
+          totalRewardsGiven.toString()
       );
     }
   });
