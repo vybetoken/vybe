@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-import "node_modules/@openzeppelin/contracts/math/SafeMath.sol";
+import "./SafeMath.sol";
 import "./Ownable.sol";
 
 contract LPVybe is Ownable {

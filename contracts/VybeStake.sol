@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-import "node_modules/@openzeppelin/contracts/math/SafeMath.sol";
+import "./SafeMath.sol";
 import "./IOwnershipTransferrable.sol";
 import "./ReentrancyGuard.sol";
 import "./Vybe.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./IERC20.sol";
 
 contract VybeStake is ReentrancyGuard, Ownable {
     using SafeMath for uint256;

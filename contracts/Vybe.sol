@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-import "node_modules/@openzeppelin/contracts/math/SafeMath.sol";
+import "./SafeMath.sol";
 import "./Ownable.sol";
 
 contract Vybe is Ownable {
@@ -25,8 +25,8 @@ contract Vybe is Ownable {
     );
 
     constructor() public Ownable(msg.sender) {
-        _name = "Vybe";
-        _symbol = "VYBE";
+        _name = "TestVybe";
+        _symbol = "TVYBE";
         _decimals = 18;
 
         _totalSupply = 2000000 * 1e18;
