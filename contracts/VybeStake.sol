@@ -186,6 +186,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
         _lastClaim[msg.sender] = block.timestamp;
 
         _staked[msg.sender] = _staked[msg.sender].add(stakerReward);
+        _totalStaked = _totalStaked.add(stakerReward);
         _VYBE.mint(address(this), stakerReward);
         _VYBE.mint(_developerFund, devPiece);
 

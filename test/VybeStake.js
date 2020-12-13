@@ -1,7 +1,7 @@
 const BigNumber = require("bignumber.js");
 
 let VybeToken = artifacts.require("Vybe");
-let VybeStake = artifacts.require("VybeStake");
+let VybeStake = artifacts.require("VybeStake.sol");
 
 const ONE = new BigNumber(1);
 const DAY = 60 * 60 * 24;
@@ -48,7 +48,7 @@ contract("Vybe token staking", async (accounts) => {
     var balanceExpected = 100000;
     // 2 years
     var testDuration = 365;
-    var i = 0.1;
+    var i = 30;
     for (i = i; i <= testDuration; i = i + 33) {
       await new Promise((resolve) => {
         web3.currentProvider.send(
@@ -93,19 +93,5 @@ contract("Vybe token staking", async (accounts) => {
       console.log(balanceAfter.toString());
       console.log("----------------------");
     }
-  });
-  it("withdrawing after staking for 2 years", async () => {
-    let VYBE = await VybeToken.deployed();
-    let stake = await VybeStake.deployed();
-    var withdrawAll = await stake.staked.call(accounts[0]);
-    console.log("--------------------");
-    console.log(`Withdrawing entire Balance of: ${withdrawAll}`);
-    await stake.decreaseStake(100000);
-
-    console.log("--------------------");
-    console.log("--------------------");
-    var checkWithdrawn = await stake.staked.call(accounts[0]);
-    console.log(`New balance: ${checkWithdrawn}`);
-    console.log("--------------------");
   });
 });
