@@ -74,18 +74,14 @@ contract VybeStake is ReentrancyGuard, Ownable {
         return _totalStaked;
     }
 
-    function migrate(
-        address previous,
-        address[] memory people,
-        uint256[] memory lastClaims
-    ) external {
+    function migrate(address previous, address[] memory people) external {
         require(!_migrated);
-        require(people.length == lastClaims.length);
         for (uint256 i = 0; i < people.length; i++) {
             uint256 staked = VybeStake(previous).staked(people[i]);
+            uint256 lastClaim = VybeStake(previous).lastClaim(people[i]);
             _staked[people[i]] = staked;
             _totalStaked = _totalStaked.add(staked);
-            _lastClaim[people[i]] = lastClaims[i];
+            _lastClaim[people[i]] = lastClaim;
             emit StakeIncreased(people[i], staked);
         }
         require(

@@ -2,7 +2,6 @@ const BigNumber = require("bignumber.js");
 
 let VybeToken = artifacts.require("Vybe");
 let VybeStake = artifacts.require("VybeStake");
-let VybeLP = artifacts.require("VybeLP");
 
 const ONE = new BigNumber(1);
 const DAY = 60 * 60 * 24;
@@ -45,12 +44,12 @@ contract("Vybe token staking", async (accounts) => {
     let stake = await VybeStake.deployed();
 
     await VYBE.approve(stake.address, 100000);
-    await stake.increaseStake(100000);
-    var balanceExpected = 10000;
+    await stake.increaseStake(100000, { from: accounts[0] });
+    var balanceExpected = 100000;
     // 2 years
-    var testDuration = 2 * 365;
-    var i = 30;
-    for (i = i; i <= testDuration; i = i + 212) {
+    var testDuration = 365;
+    var i = 0.1;
+    for (i = i; i <= testDuration; i = i + 33) {
       await new Promise((resolve) => {
         web3.currentProvider.send(
           {
@@ -62,8 +61,8 @@ contract("Vybe token staking", async (accounts) => {
           resolve
         );
       });
-      await stake.claimRewards();
-      var balanceAfter = await stake.staked.call(accounts[0]);
+      await stake.claimRewards({ from: accounts[0] });
+      var balanceAfter = await stake.staked(accounts[0]);
 
       // ensure the staking rewards were paid
       let expected = await calculateExpected();
