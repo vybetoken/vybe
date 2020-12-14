@@ -43,13 +43,13 @@ contract("Vybe token staking", async (accounts) => {
     let VYBE = await VybeToken.deployed();
     let stake = await VybeStake.deployed();
 
-    await VYBE.approve(stake.address, 100000);
-    await stake.increaseStake(100000, { from: accounts[0] });
-    var balanceExpected = 100000;
+    await VYBE.approve(stake.address, 500000);
+    await stake.increaseStake(500000, { from: accounts[0] });
+    var balanceExpected = 500000;
     // 2 years
-    var testDuration = 365;
-    var i = 30;
-    for (i = i; i <= testDuration; i = i + 33) {
+    var testDuration = 1065;
+    var i = 365;
+    for (i = i; i <= testDuration; i = i + 365) {
       await new Promise((resolve) => {
         web3.currentProvider.send(
           {
@@ -61,6 +61,9 @@ contract("Vybe token staking", async (accounts) => {
           resolve
         );
       });
+      let estimatedRewards = await stake._calculateEstimatedStakerReward(
+        accounts[0]
+      );
       await stake.claimRewards({ from: accounts[0] });
       var balanceAfter = await stake.staked(accounts[0]);
 
@@ -91,6 +94,8 @@ contract("Vybe token staking", async (accounts) => {
       balanceExpected = parseFloat(balanceAfter);
       console.log("\x1b[33m%s\x1b[0m", `Actual balance:`);
       console.log(balanceAfter.toString());
+      console.log("\x1b[33m%s\x1b[0m", `Estimated rewards:`);
+      console.log(estimatedRewards.toString());
       console.log("----------------------");
     }
   });

@@ -139,9 +139,9 @@ contract VybeStake is ReentrancyGuard, Ownable {
         returns (uint256)
     {
         uint256 interestPerMonth;
-        uint256 claimFrom = _lastClaim[msg.sender];
-        if (_lastSignificantDecrease[msg.sender] > _lastClaim[msg.sender]) {
-            claimFrom = _lastSignificantDecrease[msg.sender];
+        uint256 claimFrom = _lastClaim[staker];
+        if (_lastSignificantDecrease[staker] > _lastClaim[staker]) {
+            claimFrom = _lastSignificantDecrease[staker];
         }
         uint256 stakedTime = block.timestamp.sub(claimFrom);
 
@@ -166,13 +166,39 @@ contract VybeStake is ReentrancyGuard, Ownable {
         return StakerReward;
     }
 
-    // TODO convert to new function
-    function calculateRewards(address staker) public view returns (uint256) {
-        // removes the five percent for the dev fund
-        return _calculateStakerReward(staker);
+    function _calculateEstimatedStakerReward(address staker)
+        public
+        view
+        returns (uint256)
+    {
+        uint256 interestPerDay;
+        uint256 claimFrom = _lastClaim[staker];
+        if (_lastSignificantDecrease[staker] > _lastClaim[staker]) {
+            claimFrom = _lastSignificantDecrease[staker];
+        }
+        uint256 stakedTime = block.timestamp.sub(claimFrom);
+
+        // Platinum Tier
+        if (stakedTime > MONTH.mul(6)) {
+            // in basis points (10% APY)
+            interestPerDay = 29;
+        } else if (stakedTime > MONTH.mul(3)) {
+            interestPerDay = 22;
+        } else {
+            interestPerDay = 14;
+        }
+        stakedTime = stakedTime.div(24 hours);
+        uint256 interest = interestPerDay.mul(365);
+
+        uint256 StakerReward = (_staked[staker] / 100000) * interest;
+
+        return StakerReward;
     }
 
-    // new claim rewards
+    function calculateRewards(address staker) public view returns (uint256) {
+        return _calculateEstimatedStakerReward(staker);
+    }
+
     function claimRewards() external noReentrancy {
         require(!_dated);
         require(_staked[msg.sender] > 0, "user has 0 staked");
@@ -207,8 +233,6 @@ contract VybeStake is ReentrancyGuard, Ownable {
         _dated = true;
         IOwnershipTransferrable(owned).transferOwnership(upgraded);
     }
-
-    // ============= Vybe LP =============== //
 
     function totalLpStaked() external view returns (uint256) {
         return _totalLpStaked;
@@ -254,11 +278,8 @@ contract VybeStake is ReentrancyGuard, Ownable {
 
     function claimLpRewards() external noReentrancy updateLPReward() {
         require(_lpLastClaim[msg.sender] < startOfPeriod);
-        // gets the amount of rewards per token
         uint256 lpRewardPerToken = monthlyLPReward.div(totalLpStakedUnrewarded);
-        // get the exact reward amount
         uint256 lpReward = lpRewardPerToken.mul(_lpStaked[msg.sender]);
-        // subtracts the amount been taken from the unrewarded variable
         totalLpStakedUnrewarded = totalLpStakedUnrewarded.sub(
             _lpStaked[msg.sender]
         );
@@ -269,11 +290,8 @@ contract VybeStake is ReentrancyGuard, Ownable {
 
     modifier updateLPReward() {
         if (block.timestamp.sub(startOfPeriod) > 30 days) {
-            // gets 2% of the vybe supply
             monthlyLPReward = _VYBE.totalSupply().div(10000).mul(41);
-            // resets the start date
             startOfPeriod = block.timestamp;
-            // reset the unrewarded LP tokens
             totalLpStakedUnrewarded = _totalLpStaked;
         }
         _;
