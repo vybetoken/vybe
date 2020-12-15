@@ -142,7 +142,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
 
     // New function for calculating profit
     function _calculateStakerReward(address staker)
-        public
+        private
         view
         returns (uint256)
     {
