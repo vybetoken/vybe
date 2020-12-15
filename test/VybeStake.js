@@ -42,14 +42,14 @@ contract("Vybe token staking", async (accounts) => {
   it("Test Staking results for 2 year and only claiming the reward every 6 month", async () => {
     let VYBE = await VybeToken.deployed();
     let stake = await VybeStake.deployed();
-
-    await VYBE.approve(stake.address, "50000000000000000000");
-    await stake.increaseStake("50000000000000000000", { from: accounts[0] });
-    var balanceExpected = 50000000000000000000;
     // 2 years
     var testDuration = 200;
     var i = 30;
     for (i = i; i <= testDuration; i = i + 30) {
+      await VYBE.approve(stake.address, "50000000000000000000");
+      await stake.increaseStake("50000000000000000000", { from: accounts[0] });
+      var balanceExpected = 50000000000000000000;
+
       await new Promise((resolve) => {
         web3.currentProvider.send(
           {
