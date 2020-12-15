@@ -102,6 +102,14 @@ contract VybeStake is ReentrancyGuard, Ownable {
         return _lastClaim[staker];
     }
 
+    function rewardAvailable(address staker) external view returns (uint256) {
+        if (_lastClaim[staker].sub(block.timestamp) > 30 days) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     function increaseStake(uint256 amount) external {
         require(!_dated);
 
@@ -166,37 +174,8 @@ contract VybeStake is ReentrancyGuard, Ownable {
         return StakerReward;
     }
 
-    function _calculateEstimatedStakerReward(address staker)
-        public
-        view
-        returns (uint256)
-    {
-        uint256 interestPerDay;
-        uint256 claimFrom = _lastClaim[staker];
-        if (_lastSignificantDecrease[staker] > _lastClaim[staker]) {
-            claimFrom = _lastSignificantDecrease[staker];
-        }
-        uint256 stakedTime = block.timestamp.sub(claimFrom);
-
-        // Platinum Tier
-        if (stakedTime > MONTH.mul(6)) {
-            // in basis points (10% APY)
-            interestPerDay = 29;
-        } else if (stakedTime > MONTH.mul(3)) {
-            interestPerDay = 22;
-        } else {
-            interestPerDay = 14;
-        }
-        stakedTime = stakedTime.div(24 hours);
-        uint256 interest = interestPerDay.mul(365);
-
-        uint256 StakerReward = (_staked[staker] / 100000) * interest;
-
-        return StakerReward;
-    }
-
     function calculateRewards(address staker) public view returns (uint256) {
-        return _calculateEstimatedStakerReward(staker);
+        return _calculateStakerReward(staker);
     }
 
     function claimRewards() external noReentrancy {

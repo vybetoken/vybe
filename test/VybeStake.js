@@ -47,9 +47,9 @@ contract("Vybe token staking", async (accounts) => {
     await stake.increaseStake(500000, { from: accounts[0] });
     var balanceExpected = 500000;
     // 2 years
-    var testDuration = 1065;
-    var i = 365;
-    for (i = i; i <= testDuration; i = i + 365) {
+    var testDuration = 200;
+    var i = 30;
+    for (i = i; i <= testDuration; i = i + 30) {
       await new Promise((resolve) => {
         web3.currentProvider.send(
           {
@@ -61,9 +61,7 @@ contract("Vybe token staking", async (accounts) => {
           resolve
         );
       });
-      let estimatedRewards = await stake._calculateEstimatedStakerReward(
-        accounts[0]
-      );
+      let estimatedRewards = await stake._calculateStakerReward(accounts[0]);
       await stake.claimRewards({ from: accounts[0] });
       var balanceAfter = await stake.staked(accounts[0]);
 
