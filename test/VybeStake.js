@@ -62,37 +62,9 @@ contract("Vybe token staking", async (accounts) => {
         );
       });
 
-      // ensure the staking rewards were paid
-      let expected = await calculateExpected();
-
-      function calculateExpected() {
-        let monthsStakingFor = i / 30;
-        let rewardPerMonth = 0;
-        let reward = 0;
-        if (monthsStakingFor >= 6) {
-          rewardPerMonth = balanceExpected * 0.0083;
-        } else if (monthsStakingFor >= 3) {
-          rewardPerMonth = balanceExpected * 0.0067;
-        } else if (monthsStakingFor >= 1) {
-          rewardPerMonth = balanceExpected * 0.0042;
-        }
-        reward = rewardPerMonth * monthsStakingFor;
-        return reward;
-      }
       let estimatedRewards = await stake.rewardAvailable(accounts[0]);
       let estimatedRewards2 = await stake.rewardAvailable2(accounts[0]);
-      await stake.claimRewards({ from: accounts[0] });
-      var balanceAfter = await stake.staked(accounts[0]);
-      balanceExpected = balanceExpected + expected;
-      console.log("----------------------");
-      console.log(
-        "\x1b[33m%s\x1b[0m",
-        `Expected balance for ${(i / 30).toFixed()} months:`
-      );
-      console.log("\x1b[36m%s\x1b[0m", balanceExpected.toString());
-      balanceExpected = parseFloat(balanceAfter);
-      console.log("\x1b[33m%s\x1b[0m", `Actual balance:`);
-      console.log(balanceAfter.toString());
+
       console.log("\x1b[33m%s\x1b[0m", `blocktime: `);
       console.log(estimatedRewards.toString());
       console.log("----------------------");
