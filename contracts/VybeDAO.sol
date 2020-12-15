@@ -20,8 +20,8 @@ contract VybeDAO is ReentrancyGuard {
         address indexed destination,
         uint256 amount
     );
-    event ModuleAdditionProposed(uint64 indexed proposal, address module);
-    event ModuleRemovalProposed(uint64 indexed proposal, address module);
+    event MelodyAdditionProposed(uint64 indexed proposal, address melody);
+    event MelodyRemovalProposed(uint64 indexed proposal, address melody);
     event StakeUpgradeProposed(uint64 indexed proposal, address newStake);
     event DAOUpgradeProposed(uint64 indexed proposal, address newDAO);
 
@@ -34,8 +34,8 @@ contract VybeDAO is ReentrancyGuard {
     enum ProposalType {
         Null,
         Fund,
-        ModuleAddition,
-        ModuleRemoval,
+        MelodyAddition,
+        MelodyRemoval,
         StakeUpgrade,
         DAOUpgrade
     }
@@ -59,13 +59,13 @@ contract VybeDAO is ReentrancyGuard {
         string info;
     }
 
-    struct ModuleAdditionProposal {
-        address module;
+    struct MelodyAdditionProposal {
+        address melody;
         string info;
     }
 
-    struct ModuleRemovalProposal {
-        address module;
+    struct MelodyRemovalProposal {
+        address melody;
         string info;
     }
 
@@ -84,8 +84,8 @@ contract VybeDAO is ReentrancyGuard {
     mapping(uint64 => ProposalMetadata) public proposals;
     mapping(uint64 => mapping(address => bool)) public used;
     mapping(uint64 => FundProposal) public _fundProposals;
-    mapping(uint64 => ModuleAdditionProposal) public _moduleAdditionProposals;
-    mapping(uint64 => ModuleRemovalProposal) public _moduleRemovalProposals;
+    mapping(uint64 => MelodyAdditionProposal) public _melodyAdditionProposals;
+    mapping(uint64 => MelodyRemovalProposal) public _melodyRemovalProposals;
     mapping(uint64 => StakeUpgradeProposal) public _stakeUpgradeProposals;
     mapping(uint64 => DAOUpgradeProposal) public _daoUpgradeProposals;
 
@@ -164,29 +164,29 @@ contract VybeDAO is ReentrancyGuard {
         return proposalID;
     }
 
-    function proposeModuleAddition(address module, string calldata info)
+    function proposeMelodyAddition(address melody, string calldata info)
         external
         returns (uint64)
     {
-        uint64 proposalID = _createNewProposal(ProposalType.ModuleAddition);
-        _moduleAdditionProposals[proposalID] = ModuleAdditionProposal(
-            module,
+        uint64 proposalID = _createNewProposal(ProposalType.MelodyAddition);
+        _melodyAdditionProposals[proposalID] = MelodyAdditionProposal(
+            melody,
             info
         );
-        emit ModuleAdditionProposed(proposalID, module);
+        emit MelodyAdditionProposed(proposalID, melody);
         return proposalID;
     }
 
-    function proposeModuleRemoval(address module, string calldata info)
+    function proposeMelodyRemoval(address melody, string calldata info)
         external
         returns (uint64)
     {
-        uint64 proposalID = _createNewProposal(ProposalType.ModuleRemoval);
-        _moduleRemovalProposals[proposalID] = ModuleRemovalProposal(
-            module,
+        uint64 proposalID = _createNewProposal(ProposalType.MelodyRemoval);
+        _melodyRemovalProposals[proposalID] = MelodyRemovalProposal(
+            melody,
             info
         );
-        emit ModuleRemovalProposed(proposalID, module);
+        emit MelodyRemovalProposed(proposalID, melody);
         return proposalID;
     }
 
@@ -262,16 +262,16 @@ contract VybeDAO is ReentrancyGuard {
         ProposalMetadata storage meta = proposals[proposalID];
 
         uint256 requirement;
-        // Only require a majority vote for a funding request/to remove a module
+        // Only require a majority vote for a funding request/to remove a melody
         if (
             (meta.pType == ProposalType.Fund) ||
-            (meta.pType == ProposalType.ModuleRemoval)
+            (meta.pType == ProposalType.MelodyRemoval)
         ) {
             requirement = _stake.totalStaked().div(2).add(1);
 
-            // Require >66% to add a new module
-            // Adding an insecure or malicious module will cause the staking pool to be drained
-        } else if (meta.pType == ProposalType.ModuleAddition) {
+            // Require >66% to add a new melody
+            // Adding an insecure or malicious melody will cause the staking pool to be drained
+        } else if (meta.pType == ProposalType.MelodyAddition) {
             requirement = _stake.totalStaked().div(3).mul(2).add(1);
 
             // Require >80% to upgrade the stake/DAO contract
@@ -306,10 +306,10 @@ contract VybeDAO is ReentrancyGuard {
         if (meta.pType == ProposalType.Fund) {
             FundProposal memory proposal = _fundProposals[proposalID];
             require(_VYBE.transfer(proposal.destination, proposal.amount));
-        } else if (meta.pType == ProposalType.ModuleAddition) {
-            _stake.addModule(_moduleAdditionProposals[proposalID].module);
-        } else if (meta.pType == ProposalType.ModuleRemoval) {
-            _stake.removeModule(_moduleRemovalProposals[proposalID].module);
+        } else if (meta.pType == ProposalType.MelodyAddition) {
+            _stake.addMelody(_melodyAdditionProposals[proposalID].melody);
+        } else if (meta.pType == ProposalType.MelodyRemoval) {
+            _stake.removeMelody(_melodyRemovalProposals[proposalID].melody);
         } else if (meta.pType == ProposalType.StakeUpgrade) {
 
                 StakeUpgradeProposal memory proposal
@@ -318,8 +318,8 @@ contract VybeDAO is ReentrancyGuard {
                 _stake.upgrade(proposal.owned[i], proposal.newStake);
             }
 
-            // Register the new staking contract as a module so it can move the funds over
-            _stake.addModule(address(proposal.newStake));
+            // Register the new staking contract as a melody so it can move the funds over
+            _stake.addMelody(address(proposal.newStake));
 
             _stake = IVybeStake(proposal.newStake);
         } else if (meta.pType == ProposalType.DAOUpgrade) {
