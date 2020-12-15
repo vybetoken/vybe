@@ -35,8 +35,8 @@ contract VybeStake is ReentrancyGuard, Ownable {
         uint256 mintage,
         uint256 developerFund
     );
-    event ModuleAdded(address indexed module);
-    event ModuleRemoved(address indexed module);
+    event MelodyAdded(address indexed melody);
+    event MelodyRemoved(address indexed melody);
 
     // ========== Vybe LP =========== //
     IERC20 private _LP;
@@ -198,14 +198,14 @@ contract VybeStake is ReentrancyGuard, Ownable {
         emit Rewards(msg.sender, stakerReward, devPiece);
     }
 
-    function addModule(address module) external onlyOwner {
-        _VYBE.approve(module, UINT256_MAX);
-        emit ModuleAdded(module);
+    function addMelody(address melody) external onlyOwner {
+        _VYBE.approve(melody, UINT256_MAX);
+        emit MelodyAdded(melody);
     }
 
-    function removeModule(address module) external onlyOwner {
-        _VYBE.approve(module, 0);
-        emit ModuleRemoved(module);
+    function removeMelody(address melody) external onlyOwner {
+        _VYBE.approve(melody, 0);
+        emit MelodyRemoved(melody);
     }
 
     function upgrade(address owned, address upgraded) external onlyOwner {
