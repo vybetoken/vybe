@@ -102,11 +102,11 @@ contract VybeStake is ReentrancyGuard, Ownable {
         return _lastClaim[staker];
     }
 
-    function rewardAvailable(address staker) external view returns (bool) {
-        if (_lastClaim[staker].sub(block.timestamp) > 30 days) {
-            return true;
-        } else {
+    function rewardAvailable(address staker) external view returns (uint256) {
+        if (block.timestamp.sub(_lastClaim[staker]) >= MONTH) {
             return false;
+        } else {
+            return true;
         }
     }
 

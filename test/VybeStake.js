@@ -43,13 +43,13 @@ contract("Vybe token staking", async (accounts) => {
     let VYBE = await VybeToken.deployed();
     let stake = await VybeStake.deployed();
 
-    await VYBE.approve(stake.address, 500000);
-    await stake.increaseStake(500000, { from: accounts[0] });
-    var balanceExpected = 500000;
+    await VYBE.approve(stake.address, "50000000000000000000");
+    await stake.increaseStake("50000000000000000000", { from: accounts[0] });
+    var balanceExpected = 50000000000000000000;
     // 2 years
     var testDuration = 200;
     var i = 30;
-    for (i = i; i <= testDuration; i = i + 30) {
+    for (i = i; i <= testDuration; i = i + 31) {
       await new Promise((resolve) => {
         web3.currentProvider.send(
           {
@@ -61,9 +61,6 @@ contract("Vybe token staking", async (accounts) => {
           resolve
         );
       });
-      let estimatedRewards = await stake._calculateStakerReward(accounts[0]);
-      await stake.claimRewards({ from: accounts[0] });
-      var balanceAfter = await stake.staked(accounts[0]);
 
       // ensure the staking rewards were paid
       let expected = await calculateExpected();
@@ -82,6 +79,10 @@ contract("Vybe token staking", async (accounts) => {
         reward = rewardPerMonth * monthsStakingFor;
         return reward;
       }
+      let estimatedRewards = await stake.rewardAvailable(accounts[0]);
+      let estimatedRewards2 = await stake.rewardAvailable2(accounts[0]);
+      await stake.claimRewards({ from: accounts[0] });
+      var balanceAfter = await stake.staked(accounts[0]);
       balanceExpected = balanceExpected + expected;
       console.log("----------------------");
       console.log(
@@ -92,8 +93,11 @@ contract("Vybe token staking", async (accounts) => {
       balanceExpected = parseFloat(balanceAfter);
       console.log("\x1b[33m%s\x1b[0m", `Actual balance:`);
       console.log(balanceAfter.toString());
-      console.log("\x1b[33m%s\x1b[0m", `Estimated rewards:`);
+      console.log("\x1b[33m%s\x1b[0m", `blocktime: `);
       console.log(estimatedRewards.toString());
+      console.log("----------------------");
+      console.log("\x1b[33m%s\x1b[0m", `last claim: `);
+      console.log(estimatedRewards2.toString());
       console.log("----------------------");
     }
   });
