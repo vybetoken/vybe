@@ -1,7 +1,7 @@
 const BigNumber = require("bignumber.js");
 
 let VybeToken = artifacts.require("Vybe");
-let VybeStake = artifacts.require("VybeStake.sol");
+let VybeStake = artifacts.require("VybeStake");
 
 const ONE = new BigNumber(1);
 const DAY = 60 * 60 * 24;
@@ -42,14 +42,14 @@ contract("Vybe token staking", async (accounts) => {
   it("Test Staking results for 2 year and only claiming the reward every 6 month", async () => {
     let VYBE = await VybeToken.deployed();
     let stake = await VybeStake.deployed();
-    // 2 years
-    var testDuration = 200;
-    var i = 30;
-    for (i = i; i <= testDuration; i = i + 30) {
-      await VYBE.approve(stake.address, "50000000000000000000");
-      await stake.increaseStake("50000000000000000000", { from: accounts[0] });
-      var balanceExpected = 50000000000000000000;
 
+    await VYBE.approve(stake.address, 10000000000000);
+    await stake.increaseStake(10000000000000);
+    var balanceExpected = 10000000000000;
+    // 2 years
+    var testDuration = 4 * 366;
+    var i = 30;
+    for (i = i; i <= testDuration; i = i + 365) {
       await new Promise((resolve) => {
         web3.currentProvider.send(
           {
@@ -61,9 +61,8 @@ contract("Vybe token staking", async (accounts) => {
           resolve
         );
       });
-      let estimatedRewards = await stake.rewardAvailable(accounts[0]);
-      await stake.claimRewards({ from: accounts[0] });
-      var balanceAfter = await stake.staked(accounts[0]);
+      await stake.claimRewards();
+      var balanceAfter = await stake.staked.call(accounts[0]);
 
       // ensure the staking rewards were paid
       let expected = await calculateExpected();
@@ -92,8 +91,6 @@ contract("Vybe token staking", async (accounts) => {
       balanceExpected = parseFloat(balanceAfter);
       console.log("\x1b[33m%s\x1b[0m", `Actual balance:`);
       console.log(balanceAfter.toString());
-      console.log("\x1b[33m%s\x1b[0m", `Estimated rewards:`);
-      console.log(estimatedRewards.toString());
       console.log("----------------------");
     }
   });
