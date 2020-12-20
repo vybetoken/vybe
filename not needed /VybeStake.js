@@ -48,6 +48,7 @@ contract("Vybe token staking", async (accounts) => {
     var balanceExpected = 10000000000000;
     // 2 years
     var testDuration = 4 * 366;
+    1004158000000;
     var i = 30;
     for (i = i; i <= testDuration; i = i + 365) {
       await new Promise((resolve) => {
@@ -91,7 +92,6 @@ contract("Vybe token staking", async (accounts) => {
       balanceExpected = parseFloat(balanceAfter);
       console.log("\x1b[33m%s\x1b[0m", `Actual balance:`);
       console.log(balanceAfter.toString());
-      console.log("----------------------");
     }
   });
 });
