@@ -94,6 +94,10 @@ contract VybeStake is ReentrancyGuard, Ownable {
         _migrated = true;
     }
 
+    function closeMigration() external {
+        _migrated = true;
+    }
+
     function staked(address staker) external view returns (uint256) {
         return _staked[staker];
     }
@@ -167,7 +171,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
             // in basis points (5% APY)
             interestPerMonth = 14;
         }
-        if (stakedTime >= MONTH) {
+        if (stakedTime >= 24 hours) {
             stakedTime = stakedTime.div(24 hours);
             uint256 interest = interestPerMonth.mul(stakedTime);
 
