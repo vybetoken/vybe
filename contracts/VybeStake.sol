@@ -12,7 +12,6 @@ contract VybeStake is ReentrancyGuard, Ownable {
 
     uint256 constant UINT256_MAX = ~uint256(0);
     uint256 constant MONTH = 30 days;
-    uint256 constant DAY = 24 hours;
     // =============Vybe===================//
     Vybe private _VYBE;
 
@@ -92,9 +91,9 @@ contract VybeStake is ReentrancyGuard, Ownable {
                 _VYBE.balanceOf(previous)
             )
         );
-        _migrated = true;
     }
 
+    // close migrate after
     function closeMigration() external {
         _migrated = true;
     }
@@ -108,10 +107,10 @@ contract VybeStake is ReentrancyGuard, Ownable {
     }
 
     function rewardAvailable(address staker) external view returns (bool) {
-        if (block.timestamp.sub(_lastClaim[staker]) >= DAY) {
-            return true;
-        } else {
+        if (block.timestamp.sub(_lastClaim[staker]) >= 24 hours) {
             return false;
+        } else {
+            return true;
         }
     }
 
@@ -172,13 +171,8 @@ contract VybeStake is ReentrancyGuard, Ownable {
             // in basis points (5% APY)
             interestPerMonth = 14;
         }
-<<<<<<< HEAD
         if (stakedTime >= 24 hours) {
             stakedTime = stakedTime.div(24 hours);
-=======
-        if (stakedTime >= DAY) {
-            stakedTime = stakedTime.div(DAY);
->>>>>>> 3c20888f9ad62f81512a94c0bce7d7c7acf9cebb
             uint256 interest = interestPerMonth.mul(stakedTime);
 
             StakerReward = _staked[staker].div(1e5).mul(interest);
