@@ -98,6 +98,10 @@ contract VybeStake is ReentrancyGuard, Ownable {
         _migrated = true;
     }
 
+    function migrated() external view returns (bool) {
+        return _migrated;
+    }
+
     function staked(address staker) external view returns (uint256) {
         return _staked[staker];
     }
