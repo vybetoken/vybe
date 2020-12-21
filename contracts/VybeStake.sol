@@ -12,7 +12,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
 
     uint256 constant UINT256_MAX = ~uint256(0);
     uint256 constant MONTH = 30 days;
-    // =============Vybe===================//
+    // =============Vybe===================/
     Vybe private _VYBE;
 
     bool private _dated;
@@ -28,11 +28,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
     mapping(address => bool) private _migratedFunds;
 
     address private _developerFund;
-<<<<<<< HEAD
     address private _oldStakingContract;
-=======
-    address private _previousStake;
->>>>>>> 0ec4762d13b120c9cba5bc7d55aa65989d5cd758
 
     event StakeIncreased(address indexed staker, uint256 amount);
     event StakeDecreased(address indexed staker, uint256 amount);
@@ -57,15 +53,11 @@ contract VybeStake is ReentrancyGuard, Ownable {
     event StakeDecreasedLP(address indexed lpStaker, uint256 amount);
     event RewardsLP(address indexed staker, uint256 mintage);
 
-<<<<<<< HEAD
     constructor(
         address vybe,
         address lpvybe,
         address oldStakingContract
     ) public Ownable(msg.sender) {
-=======
-    constructor(address vybe, address lpvybe, address previous) public Ownable(msg.sender) {
->>>>>>> 0ec4762d13b120c9cba5bc7d55aa65989d5cd758
         _VYBE = Vybe(vybe);
         _developerFund = msg.sender;
         _deployedAt = block.timestamp;
