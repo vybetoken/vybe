@@ -28,6 +28,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
     mapping(address => bool) private _migratedFunds;
 
     address private _developerFund;
+    address private _oldStakingContract;
 
     event StakeIncreased(address indexed staker, uint256 amount);
     event StakeDecreased(address indexed staker, uint256 amount);
@@ -52,10 +53,15 @@ contract VybeStake is ReentrancyGuard, Ownable {
     event StakeDecreasedLP(address indexed lpStaker, uint256 amount);
     event RewardsLP(address indexed staker, uint256 mintage);
 
-    constructor(address vybe, address lpvybe) public Ownable(msg.sender) {
+    constructor(
+        address vybe,
+        address lpvybe,
+        address oldStakingContract
+    ) public Ownable(msg.sender) {
         _VYBE = Vybe(vybe);
         _developerFund = msg.sender;
         _deployedAt = block.timestamp;
+        _oldStakingContract = oldStakingContract;
         _LP = IERC20(lpvybe);
         monthlyLPReward = _VYBE.totalSupply().div(10000).mul(16);
         // resets the start date
@@ -77,24 +83,26 @@ contract VybeStake is ReentrancyGuard, Ownable {
 
     function migrate(address previous) external {
         require(!migratedFunds[msg.sender]);
-        uint256 staked = VybeStake(previous).staked(msg.sender);
-        uint256 lastClaim = VybeStake(previous).lastClaim(msg.sender);
+        uint256 staked = VybeStake(_oldStakingContract).staked(msg.sender);
+        uint256 lastClaim = VybeStake(_oldStakingContract).lastClaim(
+            msg.sender
+        );
         _staked[msg.sender] = staked;
         _lastClaim[msg.sender] = lastClaim;
         migrateFunds[msg.sender] = true;
         emit StakeIncreased(msg.sender, staked);
     }
 
-    function migrateFunds(address previous) external {
+    function migrateFunds() external {
         require(!_migrated);
         require(
             _VYBE.transferFrom(
-                previous,
+                _oldStakingContract,
                 address(this),
-                _VYBE.balanceOf(previous)
+                _VYBE.balanceOf(_oldStakingContract)
             )
         );
-        _totalStaked = _totalStaked.add(_VYBE.balanceOf(previous));
+        _totalStaked = _totalStaked.add(_VYBE.balanceOf(_oldStakingContract));
         _migrated = true;
     }
 
