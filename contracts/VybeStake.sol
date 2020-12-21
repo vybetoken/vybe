@@ -91,6 +91,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
         uint256 lastClaim = VybeStake(_oldStakingContract).lastClaim(
             msg.sender
         );
+        require(lastClaim < _deployedAt);
         _staked[msg.sender] = staked;
         _lastClaim[msg.sender] = lastClaim;
         _migratedFunds[msg.sender] = true;
