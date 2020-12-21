@@ -74,16 +74,15 @@ contract VybeStake is ReentrancyGuard, Ownable {
         return _totalStaked;
     }
 
-    function migrate(address previous, address[] memory people) external {
-        require(!_migrated);
-        for (uint256 i = 0; i < people.length; i++) {
-            uint256 staked = VybeStake(previous).staked(people[i]);
-            uint256 lastClaim = VybeStake(previous).lastClaim(people[i]);
-            _staked[people[i]] = staked;
-            _totalStaked = _totalStaked.add(staked);
-            _lastClaim[people[i]] = lastClaim;
-            emit StakeIncreased(people[i], staked);
-        }
+    function migrate() external {
+        uint256 staked = VybeStake(previous).staked(msg.sender);
+        uint256 lastClaim = VybeStake(previous).lastClaim(msg.sender);
+        _staked[msg.sender] = staked;
+        _lastClaim[msg.sender] = lastClaim;
+        emit StakeIncreased(msg.sender, staked);
+    }
+
+    function migrateFunds(address previous) external {
         require(
             _VYBE.transferFrom(
                 previous,
@@ -91,11 +90,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
                 _VYBE.balanceOf(previous)
             )
         );
-    }
-
-    // close migrate after
-    function closeMigration() external {
-        _migrated = true;
+        _totalStaked = _totalStaked.add(_VYBE.balanceOf(previous));
     }
 
     function migrated() external view returns (bool) {
