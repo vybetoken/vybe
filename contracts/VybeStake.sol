@@ -76,12 +76,12 @@ contract VybeStake is ReentrancyGuard, Ownable {
     }
 
     function migrate(address previous) external {
-        require(!migratedFunds[msg.sender]);
+        require(!_migratedFunds[msg.sender]);
         uint256 staked = VybeStake(previous).staked(msg.sender);
         uint256 lastClaim = VybeStake(previous).lastClaim(msg.sender);
         _staked[msg.sender] = staked;
         _lastClaim[msg.sender] = lastClaim;
-        migrateFunds[msg.sender] = true;
+        _migratedFunds[msg.sender] = true;
         emit StakeIncreased(msg.sender, staked);
     }
 
