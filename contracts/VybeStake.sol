@@ -99,16 +99,17 @@ contract VybeStake is ReentrancyGuard, Ownable {
     }
 
     function migrateFunds() external {
-        require(!_migrated);
+        require(!_migrated, "migrate is true");
         uint256 previousBalance = _VYBE.balanceOf(_oldStakingContract);
         require(
             _VYBE.transferFrom(
-                previousBalance,
+                _oldStakingContract,
                 address(this),
-                _VYBE.balanceOf(_oldStakingContract)
-            )
+                previousBalance
+            ),
+            "transaction failed"
         );
-        _totalStaked = _totalStaked.add(_VYBE.balanceOf(_oldStakingContract));
+        _totalStaked = _totalStaked.add(previousBalance);
         _migrated = true;
     }
 
