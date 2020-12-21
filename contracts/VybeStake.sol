@@ -86,6 +86,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
     }
 
     function migrateFunds(address previous) external onlyOwner {
+        uint256 previousBalance = _VYBE.balanceOf(previous);
         require(
             _VYBE.transferFrom(
                 previous,
@@ -93,11 +94,11 @@ contract VybeStake is ReentrancyGuard, Ownable {
                 _VYBE.balanceOf(previous)
             )
         );
-        _totalStaked = _totalStaked.add(_VYBE.balanceOf(previous));
+        _totalStaked = _totalStaked.add(previousBalance);
     }
 
-    function migrated() external view returns (bool) {
-        return _migrated;
+    function migrated(address staker) external view returns (bool) {
+        return _migratedFunds[staker];
     }
 
     function staked(address staker) external view returns (uint256) {
