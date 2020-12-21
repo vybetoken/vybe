@@ -63,7 +63,6 @@ contract VybeStake is ReentrancyGuard, Ownable {
         _deployedAt = block.timestamp;
         _oldStakingContract = oldStakingContract;
         _LP = IERC20(lpvybe);
-        _previousStake = previous;
         monthlyLPReward = _VYBE.totalSupply().div(10000).mul(16);
         // resets the start date
         startOfPeriod = block.timestamp;
@@ -79,7 +78,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
     }
 
     function previousStake() external view returns (address) {
-        return address(_previousStake);
+        return address(_oldStakingContract);
     }
 
     function totalStaked() external view returns (uint256) {
@@ -103,12 +102,12 @@ contract VybeStake is ReentrancyGuard, Ownable {
         uint256 previousBalance = _VYBE.balanceOf(_oldStakingContract);
         require(
             _VYBE.transferFrom(
-                previousBalance,
+                _oldStakingContract,
                 address(this),
                 _VYBE.balanceOf(_oldStakingContract)
             )
         );
-        _totalStaked = _totalStaked.add(_VYBE.balanceOf(_oldStakingContract));
+        _totalStaked = _totalStaked.add(previousBalance);
         _migrated = true;
     }
 
