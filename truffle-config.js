@@ -1,30 +1,17 @@
-const HDWalletProvider = require("@truffle/hdwallet-provider");
+const path = require("path");
 
 module.exports = {
-    networks: {
-        mainnet: {
-            provider: () => {return new HDWalletProvider(
-                "KEY",
-                "wss://mainnet.infura.io/ws/v3/"
-            )},
-            network_id: "*",
-            gas: 2500000,
-            gasPrice: 120000000000,
-            confirmations: 1,
-            timeoutBlocks: 500,
-            skipDryRun: true
-        }
+  // See <http://truffleframework.com/docs/advanced/configuration>
+  // to customize your Truffle configuration!
+  contracts_build_directory: path.join(__dirname, "client/src/contracts"),
+  networks: {
+    develop: {
+      port: 8545,
     },
-    mocha: {},
-    compilers: {
-        solc: {
-            version: "0.7.0",
-            settings: {
-                optimizer: {
-                    enabled: true,
-                    runs: 250
-                }
-            }
-        }
-    }
+  },
+  compilers: {
+    solc: {
+      version: "^0.6.0",
+    },
+  },
 };

@@ -1,168 +1,303 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.0;
+pragma solidity ^0.6.0;
 
 import "./SafeMath.sol";
 import "./IOwnershipTransferrable.sol";
 import "./ReentrancyGuard.sol";
 import "./Vybe.sol";
+import "./IERC20.sol";
 
 contract VybeStake is ReentrancyGuard, Ownable {
-  using SafeMath for uint256;
+    using SafeMath for uint256;
 
-  uint256 constant UINT256_MAX = ~uint256(0);
-  uint256 constant MONTH = 30 days;
+    uint256 constant UINT256_MAX = ~uint256(0);
+    uint256 constant MONTH = 30 days;
+    // =============Vybe===================/
+    Vybe private _VYBE;
 
-  Vybe private _VYBE;
+    bool private _dated;
+    bool private _migrated;
+    uint256 _deployedAt;
 
-  bool private _dated;
-  bool private _migrated;
-  uint256 _deployedAt;
+    uint256 _totalStaked;
 
-  uint256 _totalStaked;
-  mapping (address => uint256) private _staked;
-  mapping (address => uint256) private _lastClaim;
-  address private _developerFund;
+    mapping(address => uint256) private _staked;
+    mapping(address => uint256) private _lastClaim;
+    mapping(address => uint256) private _lastSignificantDecrease;
+    mapping(address => uint256) private _lastDecrease;
+    mapping(address => bool) private _migratedFunds;
 
-  event StakeIncreased(address indexed staker, uint256 amount);
-  event StakeDecreased(address indexed staker, uint256 amount);
-  event Rewards(address indexed staker, uint256 mintage, uint256 developerFund);
-  event MelodyAdded(address indexed melody);
-  event MelodyRemoved(address indexed melody);
+    address private _developerFund;
+    address private _oldStakingContract;
 
-  constructor(address vybe) Ownable(msg.sender) {
-    _VYBE = Vybe(vybe);
-    _developerFund = msg.sender;
-    _deployedAt = block.timestamp;
-  }
+    event StakeIncreased(address indexed staker, uint256 amount);
+    event StakeDecreased(address indexed staker, uint256 amount);
+    event Rewards(
+        address indexed staker,
+        uint256 mintage,
+        uint256 developerFund
+    );
+    event MelodyAdded(address indexed melody);
+    event MelodyRemoved(address indexed melody);
 
-  function upgradeDevelopmentFund(address fund) external onlyOwner {
-    _developerFund = fund;
-  }
+    // ========== Vybe LP =========== //
+    IERC20 private _LP;
+    mapping(address => uint256) private _lpStaked;
+    mapping(address => uint256) private _lpLastClaim;
+    uint256 _totalLpStaked;
+    uint256 totalLpStakedUnrewarded;
+    uint256 startOfPeriod;
+    uint256 monthlyLPReward;
 
-  function vybe() external view returns (address) {
-    return address(_VYBE);
-  }
+    event StakeIncreasedLP(address indexed lpStaker, uint256 amount);
+    event StakeDecreasedLP(address indexed lpStaker, uint256 amount);
+    event RewardsLP(address indexed staker, uint256 mintage);
 
-  function totalStaked() external view returns (uint256) {
-    return _totalStaked;
-  }
-
-  function migrate(address previous, address[] memory people, uint256[] memory lastClaims) external {
-    require(!_migrated);
-    require(people.length == lastClaims.length);
-    for (uint i = 0; i < people.length; i++) {
-      uint256 staked = VybeStake(previous).staked(people[i]);
-      _staked[people[i]] = staked;
-      _totalStaked = _totalStaked.add(staked);
-      _lastClaim[people[i]] = lastClaims[i];
-      emit StakeIncreased(people[i], staked);
+    constructor(
+        address vybe,
+        address lpvybe,
+        address oldStakingContract
+    ) public Ownable(msg.sender) {
+        _VYBE = Vybe(vybe);
+        _developerFund = msg.sender;
+        _deployedAt = block.timestamp;
+        _oldStakingContract = oldStakingContract;
+        _LP = IERC20(lpvybe);
+        monthlyLPReward = _VYBE.totalSupply().div(10000).mul(16);
+        // resets the start date
+        startOfPeriod = block.timestamp;
     }
-    require(_VYBE.transferFrom(previous, address(this), _VYBE.balanceOf(previous)));
-    _migrated = true;
-  }
 
-  function staked(address staker) external view returns (uint256) {
-    return _staked[staker];
-  }
-
-  function lastClaim(address staker) external view returns (uint256) {
-    return _lastClaim[staker];
-  }
-
-  function increaseStake(uint256 amount) external {
-    require(!_dated);
-
-    require(_VYBE.transferFrom(msg.sender, address(this), amount));
-    _totalStaked = _totalStaked.add(amount);
-    _lastClaim[msg.sender] = block.timestamp;
-    _staked[msg.sender] = _staked[msg.sender].add(amount);
-    emit StakeIncreased(msg.sender, amount);
-  }
-
-  function decreaseStake(uint256 amount) external {
-    _staked[msg.sender] = _staked[msg.sender].sub(amount);
-    _totalStaked = _totalStaked.sub(amount);
-    require(_VYBE.transfer(address(msg.sender), amount));
-    emit StakeDecreased(msg.sender, amount);
-  }
-
-  function calculateSupplyDivisor() public view returns (uint256) {
-    // base divisior for 5%
-    uint256 result = uint256(20)
-      .add(
-        // get how many months have passed since deployment
-        block.timestamp.sub(_deployedAt).div(MONTH)
-        // multiply by 5 which will be added, tapering from 20 to 50
-        .mul(5)
-      );
-
-    // set a cap of 50
-    if (result > 50) {
-      result = 50;
+    //===============VYBE=================//
+    function upgradeDevelopmentFund(address fund) external onlyOwner {
+        _developerFund = fund;
     }
-    return result;
-  }
 
-  function _calculateMintage(address staker) private view returns (uint256) {
-    // total supply
-    uint256 share = _VYBE.totalSupply()
-      // divided by the supply divisor
-      // initially 20 for 5%, increases to 50 over months for 2%
-      .div(calculateSupplyDivisor())
-      // divided again by their stake representation
-      .div(_totalStaked.div(_staked[staker]));
-
-    // this share is supposed to be issued monthly, so see how many months its been
-    uint256 timeElapsed = block.timestamp.sub(_lastClaim[staker]);
-    uint256 mintage = 0;
-    // handle whole months
-    if (timeElapsed > MONTH) {
-      mintage = share.mul(timeElapsed.div(MONTH));
-      timeElapsed = timeElapsed.mod(MONTH);
+    function vybe() external view returns (address) {
+        return address(_VYBE);
     }
-    // handle partial months, if there are any
-    // this if check prevents a revert due to div by 0
-    if (timeElapsed != 0) {
-      mintage = mintage.add(share.div(MONTH.div(timeElapsed)));
+
+    function previousStake() external view returns (address) {
+        return address(_oldStakingContract);
     }
-    return mintage;
-  }
 
-  function calculateRewards(address staker) public view returns (uint256) {
-    // removes the five percent for the dev fund
-    return _calculateMintage(staker).div(20).mul(19);
-  }
+    function totalStaked() external view returns (uint256) {
+        return _totalStaked;
+    }
 
-  // noReentrancy shouldn't be needed due to the lack of external calls
-  // better safe than sorry
-  function claimRewards() external noReentrancy {
-    require(!_dated);
+    function migrate() external {
+        require(!_migratedFunds[msg.sender]);
+        uint256 staked = VybeStake(_oldStakingContract).staked(msg.sender);
+        uint256 lastClaim = VybeStake(_oldStakingContract).lastClaim(
+            msg.sender
+        );
+        require(lastClaim < _deployedAt);
+        _staked[msg.sender] = staked;
+        _lastClaim[msg.sender] = lastClaim;
+        _migratedFunds[msg.sender] = true;
+        emit StakeIncreased(msg.sender, staked);
+    }
 
-    uint256 mintage = _calculateMintage(msg.sender);
-    uint256 mintagePiece = mintage.div(20);
-    require(mintagePiece > 0);
+    function migrateFunds(uint256 amount) external {
+        require(!_migrated, "migrate is true");
+        require(
+            _VYBE.transferFrom(_oldStakingContract, address(this), amount),
+            "transaction failed"
+        );
+        _totalStaked = _totalStaked.add(amount);
+        _migrated = true;
+    }
 
-    // update the last claim time
-    _lastClaim[msg.sender] = block.timestamp;
-    // mint out their staking rewards and the dev funds
-    _VYBE.mint(msg.sender, mintage.sub(mintagePiece));
-    _VYBE.mint(_developerFund, mintagePiece);
+    function migratedFunds(address staker) external view returns (bool) {
+        return _migratedFunds[staker];
+    }
 
-    emit Rewards(msg.sender, mintage, mintagePiece);
-  }
+    function migrated() external view returns (bool) {
+        return _migrated;
+    }
 
-  function addMelody(address melody) external onlyOwner {
-    _VYBE.approve(melody, UINT256_MAX);
-    emit MelodyAdded(melody);
-  }
+    function staked(address staker) external view returns (uint256) {
+        return _staked[staker];
+    }
 
-  function removeMelody(address melody) external onlyOwner {
-    _VYBE.approve(melody, 0);
-    emit MelodyRemoved(melody);
-  }
+    function lastClaim(address staker) external view returns (uint256) {
+        return _lastClaim[staker];
+    }
 
-  function upgrade(address owned, address upgraded) external onlyOwner {
-    _dated = true;
-    IOwnershipTransferrable(owned).transferOwnership(upgraded);
-  }
+    function rewardAvailable(address staker) external view returns (bool) {
+        if (block.timestamp.sub(_lastClaim[staker]) >= 24 hours) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    function increaseStake(uint256 amount) external {
+        require(!_dated);
+
+        require(_VYBE.transferFrom(msg.sender, address(this), amount));
+        _totalStaked = _totalStaked.add(amount);
+        _lastClaim[msg.sender] = block.timestamp;
+        _staked[msg.sender] = _staked[msg.sender].add(amount);
+        emit StakeIncreased(msg.sender, amount);
+    }
+
+    function decreaseStake(uint256 amount) external {
+        _staked[msg.sender] = _staked[msg.sender].sub(amount);
+        _totalStaked = _totalStaked.sub(amount);
+        require(_VYBE.transfer(address(msg.sender), amount));
+        uint256 cutoffPercentage = 5;
+        // checks is the amount they are withdrawing in more than 5% and if it has been over a month since they withdrew less than 5%
+        if (
+            amount >= _staked[msg.sender] * (cutoffPercentage.div(10)) &&
+            _lastDecrease[msg.sender] > MONTH
+        ) {
+            _lastSignificantDecrease[msg.sender] = block.timestamp;
+            _lastDecrease[msg.sender] = block.timestamp;
+            // If they withdraw more than 5% or withdraw less then 5% twice in 1 month then their tier is reset
+        } else {
+            _lastClaim[msg.sender] = block.timestamp;
+
+            emit StakeDecreased(msg.sender, amount);
+        }
+    }
+
+    // New function for calculating profit
+    function _calculateStakerReward(address staker)
+        private
+        view
+        returns (uint256)
+    {
+        uint256 interestPerMonth;
+        uint256 StakerReward;
+        uint256 claimFrom = _lastClaim[staker];
+        if (_lastSignificantDecrease[staker] > _lastClaim[staker]) {
+            claimFrom = _lastSignificantDecrease[staker];
+        }
+        uint256 stakedTime = block.timestamp.sub(claimFrom);
+
+        // Platinum Tier
+        if (stakedTime > MONTH.mul(6)) {
+            // in basis points (10% APY)
+            interestPerMonth = 28;
+            // Gold Tier
+        } else if (stakedTime > MONTH.mul(3)) {
+            // in basis points (8% APY)
+            interestPerMonth = 22;
+            // Silver tier
+        } else {
+            // in basis points (5% APY)
+            interestPerMonth = 14;
+        }
+        if (stakedTime >= 24 hours) {
+            stakedTime = stakedTime.div(24 hours);
+            uint256 interest = interestPerMonth.mul(stakedTime);
+
+            StakerReward = _staked[staker].div(1e5).mul(interest);
+        }
+
+        return StakerReward;
+    }
+
+    function calculateRewards(address staker) public view returns (uint256) {
+        return _calculateStakerReward(staker);
+    }
+
+    function claimRewards() external noReentrancy {
+        require(!_dated);
+        require(_staked[msg.sender] > 0, "user has 0 staked");
+
+        uint256 stakerReward = _calculateStakerReward(msg.sender);
+        uint256 devPiece = stakerReward.div(100);
+
+        stakerReward = stakerReward - devPiece;
+
+        require(stakerReward > 0);
+        _lastClaim[msg.sender] = block.timestamp;
+
+        _staked[msg.sender] = _staked[msg.sender].add(stakerReward);
+        _totalStaked = _totalStaked.add(stakerReward);
+        _VYBE.mint(address(this), stakerReward);
+        _VYBE.mint(_developerFund, devPiece);
+
+        emit Rewards(msg.sender, stakerReward, devPiece);
+    }
+
+    function addMelody(address melody) external onlyOwner {
+        _VYBE.approve(melody, UINT256_MAX);
+        emit MelodyAdded(melody);
+    }
+
+    function removeMelody(address melody) external onlyOwner {
+        _VYBE.approve(melody, 0);
+        emit MelodyRemoved(melody);
+    }
+
+    function upgrade(address owned, address upgraded) external onlyOwner {
+        _dated = true;
+        IOwnershipTransferrable(owned).transferOwnership(upgraded);
+    }
+
+    function totalLpStaked() external view returns (uint256) {
+        return _totalLpStaked;
+    }
+
+    function increaseLpStake(uint256 amount) external {
+        require(!_dated);
+
+        require(
+            _LP.transferFrom(msg.sender, address(this), amount),
+            "Can't transfer"
+        );
+        _totalLpStaked = _totalLpStaked.add(amount);
+        _lpLastClaim[msg.sender] = block.timestamp;
+        _lpStaked[msg.sender] = _lpStaked[msg.sender].add(amount);
+        emit StakeIncreasedLP(msg.sender, amount);
+    }
+
+    function decreaseLpStake(uint256 amount) external {
+        _lpStaked[msg.sender] = _lpStaked[msg.sender].sub(amount);
+        _totalLpStaked = _totalLpStaked.sub(amount);
+        require(_LP.transfer(address(msg.sender), amount));
+
+        _lpLastClaim[msg.sender] = block.timestamp;
+        emit StakeDecreasedLP(msg.sender, amount);
+    }
+
+    function lpBalanceOf(address account) public view returns (uint256) {
+        return _lpStaked[account];
+    }
+
+    function timeLeftTillNextClaim() public view returns (uint256) {
+        return block.timestamp.sub(startOfPeriod).sub(30 days);
+    }
+
+    function _monthlyLPReward() public view returns (uint256) {
+        return monthlyLPReward;
+    }
+
+    function _totalLpStakedUnrewarded() public view returns (uint256) {
+        return totalLpStakedUnrewarded;
+    }
+
+    function claimLpRewards() external noReentrancy updateLPReward() {
+        require(_lpLastClaim[msg.sender] < startOfPeriod);
+        uint256 lpRewardPerToken = monthlyLPReward.div(totalLpStakedUnrewarded);
+        uint256 lpReward = lpRewardPerToken.mul(_lpStaked[msg.sender]);
+        totalLpStakedUnrewarded = totalLpStakedUnrewarded.sub(
+            _lpStaked[msg.sender]
+        );
+        monthlyLPReward = monthlyLPReward.sub(lpReward);
+        _VYBE.mint(msg.sender, lpReward);
+        emit RewardsLP(msg.sender, lpReward);
+    }
+
+    modifier updateLPReward() {
+        if (block.timestamp.sub(startOfPeriod) > 30 days) {
+            monthlyLPReward = _VYBE.totalSupply().div(10000).mul(41);
+            startOfPeriod = block.timestamp;
+            totalLpStakedUnrewarded = _totalLpStaked;
+        }
+        _;
+    }
 }

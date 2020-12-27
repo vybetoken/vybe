@@ -24,26 +24,32 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-pragma solidity ^0.7.0;
+pragma solidity ^0.6.0;
 
 interface IERC20 {
-    function transfer(address recipient, uint256 amount) external returns (bool);
+    function transfer(address recipient, uint256 amount)
+        external
+        returns (bool);
 }
 
 contract TokenTimelock {
-    uint256 constant COIN = 10 ** 18;
+    uint256 constant COIN = 10**18;
 
     struct Batch {
-      uint256 amount;
-      uint256 time;
-      bool spent;
+        uint256 amount;
+        uint256 time;
+        bool spent;
     }
 
-    IERC20 constant _token = IERC20(address(0x3A1c1d1c06bE03cDDC4d3332F7C20e1B37c97CE9));
-    address private _beneficiary = address(0x8875c123547bc477ec76F1FF09b4E1e787E11D35);
+    IERC20 constant _token = IERC20(
+        address(0x3A1c1d1c06bE03cDDC4d3332F7C20e1B37c97CE9)
+    );
+    address private _beneficiary = address(
+        0x8875c123547bc477ec76F1FF09b4E1e787E11D35
+    );
     Batch[5] private _batches;
 
-    constructor() {
+    constructor() public {
         // October, 2020
         _batches[0] = Batch(200000 * COIN, 1601510400, false);
         // November, 2020
@@ -61,7 +67,7 @@ contract TokenTimelock {
         _beneficiary = newBeneficiary;
     }
 
-    function release(uint b) external {
+    function release(uint256 b) external {
         require(!_batches[b].spent);
         require(block.timestamp >= _batches[b].time);
         require(_token.transfer(_beneficiary, _batches[b].amount));

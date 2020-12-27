@@ -4,7 +4,7 @@ pragma solidity ^0.6.0;
 import "./SafeMath.sol";
 import "./Ownable.sol";
 
-contract Vybe is Ownable {
+contract LPVybe is Ownable {
     using SafeMath for uint256;
 
     uint256 constant UINT256_MAX = ~uint256(0);
@@ -25,11 +25,11 @@ contract Vybe is Ownable {
     );
 
     constructor() public Ownable(msg.sender) {
-        _name = "TestVybe";
-        _symbol = "TVYBE";
+        _name = "LPVybe";
+        _symbol = "LPVYBE";
         _decimals = 18;
 
-        _totalSupply = 2000000 * 1e18;
+        _totalSupply = 10000 * 1e18;
         _balances[msg.sender] = _totalSupply;
         emit Transfer(address(0), msg.sender, _totalSupply);
     }
