@@ -91,6 +91,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
         uint256 lastClaim = VybeStake(_oldStakingContract).lastClaim(
             msg.sender
         );
+
         require(lastClaim < _deployedAt);
         _staked[msg.sender] = staked;
         _lastClaim[msg.sender] = lastClaim;
@@ -147,11 +148,9 @@ contract VybeStake is ReentrancyGuard, Ownable {
         _totalStaked = _totalStaked.sub(amount);
         require(_VYBE.transfer(address(msg.sender), amount));
         uint256 cutoffPercentage = 5;
-        // checks is the amount they are withdrawing in more than 5% and if it has been over a month since they withdrew less than 5%
-        if (
-            amount >= _staked[msg.sender] * (cutoffPercentage.div(10)) &&
-            _lastDecrease[msg.sender] > MONTH
-        ) {
+        // checks is the amount they are withdrawing is more than 5% and if it has been over a month since they withdrew less than 5%
+        if (amount >= _staked[msg.sender].div(10).div(2) &&
+            block.timestamp.sub(_lastClaim[msg.sender]) > MONTH) {
             _lastSignificantDecrease[msg.sender] = block.timestamp;
             _lastDecrease[msg.sender] = block.timestamp;
             // If they withdraw more than 5% or withdraw less then 5% twice in 1 month then their tier is reset
@@ -284,6 +283,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
         require(_lpLastClaim[msg.sender] < startOfPeriod);
         uint256 lpRewardPerToken = monthlyLPReward.div(totalLpStakedUnrewarded);
         uint256 lpReward = lpRewardPerToken.mul(_lpStaked[msg.sender]);
+        _lpLastClaim[msg.sender] = block.timestamp;
         totalLpStakedUnrewarded = totalLpStakedUnrewarded.sub(
             _lpStaked[msg.sender]
         );
