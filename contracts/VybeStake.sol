@@ -23,7 +23,6 @@ contract VybeStake is ReentrancyGuard, Ownable {
 
     mapping(address => uint256) private _staked;
     mapping(address => uint256) private _lastClaim;
-    mapping(address => uint256) private _lastSignificantDecrease;
     mapping(address => uint256) private _lastDecrease;
     mapping(address => bool) private _migratedFunds;
 
@@ -40,30 +39,14 @@ contract VybeStake is ReentrancyGuard, Ownable {
     event MelodyAdded(address indexed melody);
     event MelodyRemoved(address indexed melody);
 
-    // ========== Vybe LP =========== //
-    IERC20 private _LP;
-    mapping(address => uint256) private _lpStaked;
-    mapping(address => uint256) private _lpLastClaim;
-    uint256 _totalLpStaked;
-    uint256 totalLpStakedUnrewarded;
-    uint256 startOfPeriod;
-    uint256 monthlyLPReward;
-
-    event StakeIncreasedLP(address indexed lpStaker, uint256 amount);
-    event StakeDecreasedLP(address indexed lpStaker, uint256 amount);
-    event RewardsLP(address indexed staker, uint256 mintage);
-
     constructor(
         address vybe,
-        address lpvybe,
         address oldStakingContract
     ) public Ownable(msg.sender) {
         _VYBE = Vybe(vybe);
         _developerFund = msg.sender;
         _deployedAt = block.timestamp;
         _oldStakingContract = oldStakingContract;
-        _LP = IERC20(lpvybe);
-        monthlyLPReward = _VYBE.totalSupply().div(10000).mul(16);
         // resets the start date
         startOfPeriod = block.timestamp;
     }
@@ -149,17 +132,15 @@ contract VybeStake is ReentrancyGuard, Ownable {
         uint256 cutoffPercentage = 5;
         // checks is the amount they are withdrawing in more than 5% and if it has been over a month since they withdrew less than 5%
         if (
-            amount >= _staked[msg.sender] * (cutoffPercentage.div(10)) &&
-            _lastDecrease[msg.sender] > MONTH
+            amount <= _staked[msg.sender].div(20) &&
+            _lastDecrease[msg.sender] < block.timestamp - MONTH
         ) {
-            _lastSignificantDecrease[msg.sender] = block.timestamp;
             _lastDecrease[msg.sender] = block.timestamp;
-            // If they withdraw more than 5% or withdraw less then 5% twice in 1 month then their tier is reset
+        // If they withdraw more than 5% or withdraw less then 5% twice in 1 month then their tier is reset
         } else {
             _lastClaim[msg.sender] = block.timestamp;
-
-            emit StakeDecreased(msg.sender, amount);
         }
+        emit StakeDecreased(msg.sender, amount);
     }
 
     // New function for calculating profit
@@ -170,11 +151,7 @@ contract VybeStake is ReentrancyGuard, Ownable {
     {
         uint256 interestPerMonth;
         uint256 StakerReward;
-        uint256 claimFrom = _lastClaim[staker];
-        if (_lastSignificantDecrease[staker] > _lastClaim[staker]) {
-            claimFrom = _lastSignificantDecrease[staker];
-        }
-        uint256 stakedTime = block.timestamp.sub(claimFrom);
+        uint256 stakedTime = block.timestamp.sub(_lastClaim[staker]);
 
         // Platinum Tier
         if (stakedTime > MONTH.mul(6)) {
@@ -236,68 +213,5 @@ contract VybeStake is ReentrancyGuard, Ownable {
     function upgrade(address owned, address upgraded) external onlyOwner {
         _dated = true;
         IOwnershipTransferrable(owned).transferOwnership(upgraded);
-    }
-
-    function totalLpStaked() external view returns (uint256) {
-        return _totalLpStaked;
-    }
-
-    function increaseLpStake(uint256 amount) external {
-        require(!_dated);
-
-        require(
-            _LP.transferFrom(msg.sender, address(this), amount),
-            "Can't transfer"
-        );
-        _totalLpStaked = _totalLpStaked.add(amount);
-        _lpLastClaim[msg.sender] = block.timestamp;
-        _lpStaked[msg.sender] = _lpStaked[msg.sender].add(amount);
-        emit StakeIncreasedLP(msg.sender, amount);
-    }
-
-    function decreaseLpStake(uint256 amount) external {
-        _lpStaked[msg.sender] = _lpStaked[msg.sender].sub(amount);
-        _totalLpStaked = _totalLpStaked.sub(amount);
-        require(_LP.transfer(address(msg.sender), amount));
-
-        _lpLastClaim[msg.sender] = block.timestamp;
-        emit StakeDecreasedLP(msg.sender, amount);
-    }
-
-    function lpBalanceOf(address account) public view returns (uint256) {
-        return _lpStaked[account];
-    }
-
-    function timeLeftTillNextClaim() public view returns (uint256) {
-        return block.timestamp.sub(startOfPeriod).sub(30 days);
-    }
-
-    function _monthlyLPReward() public view returns (uint256) {
-        return monthlyLPReward;
-    }
-
-    function _totalLpStakedUnrewarded() public view returns (uint256) {
-        return totalLpStakedUnrewarded;
-    }
-
-    function claimLpRewards() external noReentrancy updateLPReward() {
-        require(_lpLastClaim[msg.sender] < startOfPeriod);
-        uint256 lpRewardPerToken = monthlyLPReward.div(totalLpStakedUnrewarded);
-        uint256 lpReward = lpRewardPerToken.mul(_lpStaked[msg.sender]);
-        totalLpStakedUnrewarded = totalLpStakedUnrewarded.sub(
-            _lpStaked[msg.sender]
-        );
-        monthlyLPReward = monthlyLPReward.sub(lpReward);
-        _VYBE.mint(msg.sender, lpReward);
-        emit RewardsLP(msg.sender, lpReward);
-    }
-
-    modifier updateLPReward() {
-        if (block.timestamp.sub(startOfPeriod) > 30 days) {
-            monthlyLPReward = _VYBE.totalSupply().div(10000).mul(41);
-            startOfPeriod = block.timestamp;
-            totalLpStakedUnrewarded = _totalLpStaked;
-        }
-        _;
     }
 }
